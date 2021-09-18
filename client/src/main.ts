@@ -15,7 +15,11 @@ import "@fontsource/roboto-mono/500.css";
 import "@fontsource/roboto-mono/600.css";
 
 // import tailwind
-import "./assets/tailwind.css";
+import "@/assets/tailwind.css";
+
+// socketio
+import useSocket from "@/api/socket";
+useSocket();
 
 const app = createApp(App);
 

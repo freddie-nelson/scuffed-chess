@@ -14,6 +14,7 @@
     "autoprefixer": "^9",
     "core-js": "^3.6.5",
     "postcss": "^7",
+    "socket.io-client": "^2.4.0",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@iconify-icons/feather": "^1.1.0",
     "@iconify/vue": "^2.0.0-rc.3",
+    "@types/socket.io-client": "^1.4.36",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
     "@vue/cli-plugin-babel": "~4.5.0",

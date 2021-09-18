@@ -1,22 +1,35 @@
 <template>
   <c-toast-controller />
-  <router-view class="bg-bg-light"></router-view>
+
+  <router-view
+    v-if="$store.state.isConnected"
+    class="bg-bg-light"
+  ></router-view>
+  <div
+    class="w-full h-full bg-bg-light flex justify-center items-center"
+    v-else
+  >
+    <c-spinner-circle class="transform scale-75" />
+  </div>
+
   <div id="modals"></div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import CToastController from "@/components/shared/Toast/CToastController.vue";
+import CSpinnerCircle from "./components/shared/Spinner/CSpinnerCircle.vue";
 
 export default defineComponent({
   name: "App",
   components: {
     CToastController,
+    CSpinnerCircle,
   },
   setup() {
     onMounted(() => {
       const html = document.querySelector("html");
-      html.classList.add("dark");
+      html?.classList.add("dark");
     });
   },
 });

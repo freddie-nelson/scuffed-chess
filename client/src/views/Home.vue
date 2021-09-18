@@ -85,6 +85,7 @@ import CButtonOutline from "../components/shared/Button/CButtonOutline.vue";
 import CGradientHeading from "../components/shared/Heading/CGradientHeading.vue";
 import CInputText from "../components/shared/Input/CInputText.vue";
 import CModal from "../components/shared/Modal/CModal.vue";
+import { useStore } from "../store";
 
 export default defineComponent({
   name: "Home",
@@ -96,6 +97,8 @@ export default defineComponent({
     CModal,
   },
   setup() {
+    const store = useStore();
+
     const username = ref("");
     const usernameError = ref("");
 
@@ -130,6 +133,8 @@ export default defineComponent({
         return (usernameError.value = "Username exceeds 18 characters.");
       else if (!username.value)
         return (usernameError.value = "Username is empty.");
+
+      store.state.socket.emit("game:create", username.value);
     };
 
     return {
