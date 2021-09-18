@@ -1,7 +1,7 @@
-package main
+package chess
 
 // User stores name and time of user
-type User struct {
+type Player struct {
 	name     string
 	time     int
 	opponent bool

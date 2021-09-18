@@ -1,4 +1,4 @@
-package main
+package chess
 
 // Spot identifies a location on the board
 type Spot struct {

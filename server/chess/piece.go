@@ -1,4 +1,4 @@
-package main
+package chess
 
 // Enum type of piece
 const (
@@ -25,8 +25,8 @@ type Piece struct {
 
 // SimulateMove simualates a move on a clone of the current board
 // returns if the king (of the piece's color) is in check in the new board state
-func (p *Piece) SimulateMove(s *Spot, d *Spot) bool {
-	simulatedBoard := *Game.board.grid
+func (p *Piece) SimulateMove(b *Board, s *Spot, d *Spot) bool {
+	simulatedBoard := *b.grid
 
 	start := &simulatedBoard[s.file][s.rank]
 	destination := &simulatedBoard[d.file][d.rank]
@@ -43,7 +43,7 @@ func (p *Piece) SimulateMove(s *Spot, d *Spot) bool {
 		opponentColor = White
 	}
 
-	if Game.board.IsKingInCheck(piece.color, opponentColor, &simulatedBoard) {
+	if b.IsKingInCheck(piece.color, opponentColor, &simulatedBoard) {
 		return true
 	}
 
@@ -52,7 +52,7 @@ func (p *Piece) SimulateMove(s *Spot, d *Spot) bool {
 
 // FindValidMoves finds and returns all the legal moves a piece can make from it's current position
 // @returns array of all valid moves
-func (p *Piece) FindValidMoves(b *[Size][Size]Spot, file int, rank int, opponentColor int, pruneChecks bool) ([]Spot, bool) {
+func (p *Piece) FindValidMoves(b *Board, file int, rank int, opponentColor int, pruneChecks bool) ([]Spot, bool) {
 	validMoves := make([]Spot, 0)
 
 	// bishop offsets
@@ -101,7 +101,7 @@ func (p *Piece) FindValidMoves(b *[Size][Size]Spot, file int, rank int, opponent
 
 	// remove moves that cause king to be put in check
 	for i := len(validMoves) - 1; i >= 0 && pruneChecks; i-- {
-		if p.SimulateMove(&b[file][rank], &validMoves[i]) {
+		if p.SimulateMove(b, &b.grid[file][rank], &validMoves[i]) {
 			// remove move
 			validMoves = append(validMoves[:i], validMoves[i+1:]...)
 		}
@@ -110,7 +110,7 @@ func (p *Piece) FindValidMoves(b *[Size][Size]Spot, file int, rank int, opponent
 	return validMoves, checksKing
 }
 
-func calculateMovesFromOffsets(b *[Size][Size]Spot, validMoves *[]Spot, file int, rank int, xOffs []int, yOffs []int, stopAfter int, canTake bool, opponentColor int) bool {
+func calculateMovesFromOffsets(b *Board, validMoves *[]Spot, file int, rank int, xOffs []int, yOffs []int, stopAfter int, canTake bool, opponentColor int) bool {
 	checksKing := false
 
 	// use offsets to jump across board in the way the piece would
@@ -123,11 +123,11 @@ func calculateMovesFromOffsets(b *[Size][Size]Spot, validMoves *[]Spot, file int
 			for i := 1; i < Size && i <= stopAfter; i++ {
 				currentFile := file + xOff*i
 				currentRank := rank + yOff*i
-				if Game.board.IsSpotOffBoard(currentFile, currentRank) {
+				if b.IsSpotOffBoard(currentFile, currentRank) {
 					break
 				}
 
-				spot := &b[currentFile][currentRank]
+				spot := &b.grid[currentFile][currentRank]
 				if spot.containsPiece {
 					if spot.piece.color == opponentColor && canTake {
 						if spot.piece.class == King {
@@ -163,7 +163,7 @@ func isMoveAlreadyAdded(validMoves *[]Spot, file int, rank int) bool {
 	return false
 }
 
-func checkIfPawnCanTake(b *[Size][Size]Spot, validMoves *[]Spot, file int, rank int, opponentColor int) bool {
+func checkIfPawnCanTake(b *Board, validMoves *[]Spot, file int, rank int, opponentColor int) bool {
 	// calculate positions on board
 	lFile := file - 1
 	rFile := file + 1
@@ -172,31 +172,31 @@ func checkIfPawnCanTake(b *[Size][Size]Spot, validMoves *[]Spot, file int, rank 
 	checksKing := false
 
 	// left file
-	if !Game.board.IsSpotOffBoard(lFile, nextRank) {
+	if !b.IsSpotOffBoard(lFile, nextRank) {
 
 		// can pawn take diagonally
-		if b[lFile][nextRank].containsPiece && b[lFile][nextRank].piece.color == opponentColor {
-			if b[lFile][nextRank].piece.class == King {
+		if b.grid[lFile][nextRank].containsPiece && b.grid[lFile][nextRank].piece.color == opponentColor {
+			if b.grid[lFile][nextRank].piece.class == King {
 				checksKing = true
 			} else {
 				*validMoves = append(*validMoves, Spot{file: lFile, rank: nextRank})
 			}
-		} else if !b[lFile][nextRank].containsPiece && b[lFile][nextRank].passantTarget > 0 { // can pawn take en passant
+		} else if !b.grid[lFile][nextRank].containsPiece && b.grid[lFile][nextRank].passantTarget > 0 { // can pawn take en passant
 			*validMoves = append(*validMoves, Spot{file: lFile, rank: nextRank})
 		}
 	}
 
 	// right file
-	if !Game.board.IsSpotOffBoard(rFile, nextRank) {
+	if !b.IsSpotOffBoard(rFile, nextRank) {
 
 		// can pawn take diagonally
-		if b[rFile][nextRank].containsPiece && b[rFile][nextRank].piece.color == opponentColor {
-			if b[rFile][nextRank].piece.class == King {
+		if b.grid[rFile][nextRank].containsPiece && b.grid[rFile][nextRank].piece.color == opponentColor {
+			if b.grid[rFile][nextRank].piece.class == King {
 				checksKing = true
 			} else {
 				*validMoves = append(*validMoves, Spot{file: rFile, rank: nextRank})
 			}
-		} else if !b[rFile][nextRank].containsPiece && b[rFile][nextRank].passantTarget > 0 { // can pawn take en passant
+		} else if !b.grid[rFile][nextRank].containsPiece && b.grid[rFile][nextRank].passantTarget > 0 { // can pawn take en passant
 			*validMoves = append(*validMoves, Spot{file: rFile, rank: nextRank})
 		}
 	}

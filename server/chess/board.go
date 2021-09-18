@@ -1,18 +1,14 @@
-package main
+package chess
 
-import (
-	"fmt"
-	"strings"
-	"unicode"
-)
+const Size = 8
 
 // Board handles game logic about the board and drawing board to console
 type Board struct {
 	grid *[Size][Size]Spot
 }
 
-// Setup creates the initial chess board
-func (b *Board) Setup() {
+// SetupBoard creates the initial chess board
+func (b *Board) SetupBoard() {
 	board := [Size][Size]Spot{}
 
 	for rank := 0; rank < Size; rank++ {
@@ -22,101 +18,6 @@ func (b *Board) Setup() {
 	}
 
 	b.grid = &board
-
-	// generate starting position
-	startingFEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	b.GenerateFromFENString(startingFEN)
-}
-
-// GenerateFromFENString creates a particular board position from a provided valid FEN string
-func (b *Board) GenerateFromFENString(fen string) {
-	piecePlacements := strings.Split(fen, "/")
-
-	last := strings.Split(piecePlacements[7], " ")
-	piecePlacements[7] = last[0]
-	fields := last[1:]
-
-	// current turn
-	if fields[0] == "b" {
-		Game.turn = Black
-	} else {
-		Game.turn = White
-	}
-
-	// castling rights
-	Game.blackCastling = &CastlingRights{false, false}
-	Game.whiteCastling = &CastlingRights{false, false}
-
-	for _, rights := range fields[1] {
-		if unicode.IsLower(rights) {
-			if rights == 'k' {
-				Game.blackCastling.kingside = true
-			} else {
-				Game.blackCastling.queenside = true
-			}
-		} else {
-			if rights == 'K' {
-				Game.whiteCastling.kingside = true
-			} else {
-				Game.whiteCastling.queenside = true
-			}
-		}
-	}
-
-	// en passant targets
-	if fields[2] != "-" {
-		file, rank := b.locationToFileAndRank(fields[2])
-		b.grid[file][rank].passantTarget = 2
-	}
-
-	// fullmoves and halfmoves
-	Game.halfmoves = int(fields[3][0] - '0')
-	Game.fullmoves = int(fields[4][0] - '0')
-
-	// place pieces
-	for rank, fenRank := range piecePlacements {
-		file := 0
-
-		for _, char := range fenRank {
-			var color int
-			var class int
-
-			if unicode.IsNumber(char) {
-				file += int(char - '0')
-				continue
-			} else if unicode.IsLower(char) {
-				color = Black
-			} else {
-				color = White
-			}
-
-			switch unicode.ToUpper(char) {
-			case 'Q':
-				class = Queen
-			case 'K':
-				class = King
-			case 'R':
-				class = Rook
-			case 'B':
-				class = Bishop
-			case 'N':
-				class = Knight
-			case 'P':
-				class = Pawn
-			}
-
-			b.grid[file][rank].containsPiece = true
-			b.grid[file][rank].piece = &Piece{color: color, class: class}
-			file++
-		}
-	}
-}
-
-func (b *Board) locationToFileAndRank(loc string) (int, int) {
-	file := int(loc[0] - 'a')
-	rank := 8 - int(loc[1]-'0')
-	fmt.Printf(" file: %v rank: %v", file, rank)
-	return file, rank
 }
 
 // GetValidMoves returns the moves a piece can play if the given spot contains a piece else returns {}
@@ -125,7 +26,7 @@ func (b *Board) GetValidMoves(s *Spot) []Spot {
 		return []Spot{}
 	}
 
-	validMoves, _ := s.piece.FindValidMoves(b.grid, s.file, s.rank, Black, true)
+	validMoves, _ := s.piece.FindValidMoves(b, s.file, s.rank, Black, true)
 	return validMoves
 }
 
@@ -135,7 +36,8 @@ func (b *Board) IsSpotOffBoard(file int, rank int) bool {
 }
 
 // MovePiece moves a piece from start to destination
-func (b *Board) MovePiece(start *Spot, destination *Spot) {
+// @returns boolean representing wether the move was successful or not
+func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 	turnSuccessful := true
 
 	piece := start.piece
@@ -164,11 +66,11 @@ func (b *Board) MovePiece(start *Spot, destination *Spot) {
 
 	// if move puts player's king in check then revert the move
 	opponentColor := Black
-	if Game.turn == Black {
+	if turn == Black {
 		opponentColor = White
 	}
 
-	if b.IsKingInCheck(Game.turn, opponentColor, nil) {
+	if b.IsKingInCheck(turn, opponentColor, nil) {
 		piece.moves--
 
 		start.piece = piece
@@ -187,9 +89,10 @@ func (b *Board) MovePiece(start *Spot, destination *Spot) {
 	}
 
 	// if turn was successfully played then pass turn to opponent
-	if turnSuccessful {
-		Game.NextTurn(Game.turn, opponentColor)
-	}
+	// if turnSuccessful {
+	// 	Game.NextTurn(Game.turn, opponentColor)
+	// }
+	return turnSuccessful
 }
 
 // IsKingInCheck goes through each opponent piece on the board and checks if they are attacking
@@ -205,7 +108,7 @@ func (b *Board) IsKingInCheck(color int, opponentColor int, simulatedBoard *[Siz
 	for rank := 0; rank < Size; rank++ {
 		for file := 0; file < Size; file++ {
 			if board[file][rank].containsPiece && board[file][rank].piece.color == opponentColor {
-				_, inCheck := board[file][rank].piece.FindValidMoves(board, file, rank, color, false)
+				_, inCheck := board[file][rank].piece.FindValidMoves(b, file, rank, color, false)
 				if inCheck {
 					return true
 				}
@@ -219,7 +122,7 @@ func (b *Board) IsKingInCheck(color int, opponentColor int, simulatedBoard *[Siz
 // IsStalemate returns true if color cannot play any moves but is not in check
 func (b *Board) IsStalemate(color int, opponentColor int) bool {
 	king := b.GetKingSpot(color)
-	kingMoves, _ := king.piece.FindValidMoves(b.grid, king.file, king.rank, opponentColor, true)
+	kingMoves, _ := king.piece.FindValidMoves(b, king.file, king.rank, opponentColor, true)
 
 	// when king cannot move out of check
 	// check if any move by color can get king out of check
@@ -228,7 +131,7 @@ func (b *Board) IsStalemate(color int, opponentColor int) bool {
 			for file := 0; file < Size; file++ {
 				if b.grid[file][rank].containsPiece && b.grid[file][rank].piece.color == color && b.grid[file][rank].piece.class != King {
 					piece := b.grid[file][rank].piece
-					moves, _ := piece.FindValidMoves(b.grid, file, rank, opponentColor, true)
+					moves, _ := piece.FindValidMoves(b, file, rank, opponentColor, true)
 
 					// since moves are pruned for illegal moves
 					// if any move is available then it will put king out of check
