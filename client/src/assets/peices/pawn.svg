@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" version="1.0">
+  <path class="piece-svg" fill="white" stroke="black" stroke-dashoffset="10" stroke-linecap="round" stroke-width="1.5" d="M22 9a4.001 4.001 0 0 0-3.219 6.375C16.83 16.497 15.5 18.588 15.5 21a6.47 6.47 0 0 0 2.406 5.031C14.907 27.09 10.5 31.578 10.5 39.5h23c0-7.922-4.407-12.41-7.406-13.469A6.47 6.47 0 0 0 28.5 21c0-2.412-1.33-4.503-3.281-5.625A4.001 4.001 0 0 0 22 9z"/>
+</svg>
