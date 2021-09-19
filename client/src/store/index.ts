@@ -1,3 +1,4 @@
+import { Game } from "@/utils/chess";
 import { createStore, useStore as vuexUseStore } from "vuex";
 
 export interface Toast {
@@ -19,45 +20,6 @@ export interface Socket {
   close(): Socket;
   disconnect(): Socket;
   compress(compress: boolean): Socket;
-}
-
-export enum Color {
-  White,
-  Black,
-}
-
-// Enum type of piece
-export enum Class {
-  Queen,
-  King,
-  Rook,
-  Bishop,
-  Knight,
-  Pawn,
-}
-
-// Piece : generic class for a chess piece
-export interface Piece {
-  color: Color;
-  class: Class;
-}
-
-export interface Spot {
-  piece: Piece;
-  containsPiece: boolean;
-  file: number;
-  rank: number;
-}
-export interface Game {
-  color: Color;
-  opponentColor: Color;
-  board: Spot[][];
-  ended: boolean;
-  endState: string;
-  turn: Color;
-  halfmoves: number;
-  fullmoves: number;
-  code: string;
 }
 
 export interface State {
