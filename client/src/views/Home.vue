@@ -79,6 +79,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import CButton from "../components/shared/Button/CButton.vue";
 import CButtonOutline from "../components/shared/Button/CButtonOutline.vue";
@@ -98,6 +99,7 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
+    const router = useRouter();
 
     const username = ref("");
     const usernameError = ref("");
@@ -123,6 +125,23 @@ export default defineComponent({
         return (usernameError.value = "Username exceeds 18 characters.");
       else if (!username.value)
         return (usernameError.value = "Username is empty.");
+
+      store.state.socket.emit(
+        "game:join",
+        username.value,
+        joinCode.value,
+        (code: string) => {
+          if (code) {
+            router.push({
+              name: "Game",
+              query: { code: code, opponent: "true" },
+            });
+            store.commit("SET_IN_GAME", true);
+          } else {
+            usernameError.value = "Failed to join game.";
+          }
+        }
+      );
     };
 
     // create
@@ -134,7 +153,14 @@ export default defineComponent({
       else if (!username.value)
         return (usernameError.value = "Username is empty.");
 
-      store.state.socket.emit("game:create", username.value);
+      store.state.socket.emit("game:create", username.value, (code: string) => {
+        if (code) {
+          router.push({ name: "Game", query: { code: code } });
+          store.commit("SET_IN_GAME", true);
+        } else {
+          usernameError.value = "Failed to create game.";
+        }
+      });
     };
 
     return {

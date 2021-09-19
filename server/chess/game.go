@@ -25,20 +25,26 @@ type GameController struct {
 	whiteCastling *CastlingRights
 	blackCastling *CastlingRights
 
-	you      *Player
-	opponent *Player
+	You      *Player
+	Opponent *Player
 
-	timeOfLastTick int
-	deltaTime      int
+	code string
 }
 
-// Setup creates the initial game state
-func (g *GameController) Setup() {
+// NewGame creates the initial game state
+func NewGame(code string) *GameController {
+	var g GameController
+
+	g.whiteCastling = &CastlingRights{true, true}
+	g.blackCastling = &CastlingRights{true, true}
+
 	// create board
-	g.board.SetupBoard()
+	g.board = NewBoard()
 
 	startingFEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	g.GenerateFromFENString(startingFEN)
+
+	return &g
 }
 
 // GenerateFromFENString creates a particular board position from a provided valid FEN string

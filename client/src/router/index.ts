@@ -9,7 +9,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: "/game",
-    name: "game",
+    name: "Game",
     component: () => import(/* webpackChunkName: "about" */ "../views/Game.vue"),
   },
 ];

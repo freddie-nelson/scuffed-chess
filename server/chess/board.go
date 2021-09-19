@@ -8,7 +8,8 @@ type Board struct {
 }
 
 // SetupBoard creates the initial chess board
-func (b *Board) SetupBoard() {
+func NewBoard() *Board {
+	var b Board
 	board := [Size][Size]Spot{}
 
 	for rank := 0; rank < Size; rank++ {
@@ -18,6 +19,7 @@ func (b *Board) SetupBoard() {
 	}
 
 	b.grid = &board
+	return &b
 }
 
 // GetValidMoves returns the moves a piece can play if the given spot contains a piece else returns {}
@@ -38,6 +40,10 @@ func (b *Board) IsSpotOffBoard(file int, rank int) bool {
 // MovePiece moves a piece from start to destination
 // @returns boolean representing wether the move was successful or not
 func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
+	if !start.containsPiece || start.piece.color != turn {
+		return false
+	}
+
 	turnSuccessful := true
 
 	piece := start.piece
