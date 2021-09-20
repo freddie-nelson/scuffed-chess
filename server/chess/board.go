@@ -14,7 +14,7 @@ func NewBoard() *Board {
 
 	for rank := 0; rank < Size; rank++ {
 		for file := 0; file < Size; file++ {
-			board[file][rank] = Spot{file: file, rank: rank}
+			board[file][rank] = Spot{file: file, rank: rank, piece: nil}
 		}
 	}
 
@@ -23,12 +23,12 @@ func NewBoard() *Board {
 }
 
 // GetValidMoves returns the moves a piece can play if the given spot contains a piece else returns {}
-func (b *Board) GetValidMoves(s *Spot) []Spot {
+func (b *Board) GetValidMoves(s *Spot, opponentColor int) []Spot {
 	if !s.containsPiece {
 		return []Spot{}
 	}
 
-	validMoves, _ := s.piece.FindValidMoves(b, s.file, s.rank, Black, true)
+	validMoves, _ := s.piece.FindValidMoves(b, s.file, s.rank, opponentColor, true)
 	return validMoves
 }
 
@@ -58,7 +58,12 @@ func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 
 	// if it is pawns first move and moved 2 places make spot behind pawn en passant target for next turn
 	if destination.piece.class == Pawn && destination.piece.moves == 1 && (destination.rank == 4 || destination.rank == 3) {
-		b.grid[destination.file][destination.rank+1].passantTarget = 2
+		passantRank := destination.rank + 1
+		if turn == Black {
+			passantRank -= 2
+		}
+
+		b.grid[destination.file][passantRank].passantTarget = 2
 	}
 
 	// if pawn move results in en passant, take piece behind destination
@@ -76,7 +81,7 @@ func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 		opponentColor = White
 	}
 
-	if b.IsKingInCheck(turn, opponentColor, nil) {
+	if b.IsKingInCheck(turn, opponentColor) {
 		piece.moves--
 
 		start.piece = piece
@@ -104,15 +109,16 @@ func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 // IsKingInCheck goes through each opponent piece on the board and checks if they are attacking
 // color's king
 // returns either true (the king is in check) or false (the king is not in check)
-func (b *Board) IsKingInCheck(color int, opponentColor int, simulatedBoard *[Size][Size]Spot) bool {
+func (b *Board) IsKingInCheck(color int, opponentColor int) bool {
 	board := b.grid
-	if simulatedBoard != nil {
-		board = simulatedBoard
-	}
 
 	// check if any opponent's piece puts the king in check
 	for rank := 0; rank < Size; rank++ {
 		for file := 0; file < Size; file++ {
+			// if board[file][rank].containsPiece && board[file][rank].piece.class == King && board[file][rank].piece.color == color {
+			// 	log.Printf("found king at: (%d, %d)", file, rank)
+			// }
+
 			if board[file][rank].containsPiece && board[file][rank].piece.color == opponentColor {
 				_, inCheck := board[file][rank].piece.FindValidMoves(b, file, rank, color, false)
 				if inCheck {

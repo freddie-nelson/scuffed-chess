@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ white: piece.color === 0, black: piece.color === 1 }">
+  <div :class="{ white: piece.color === 1, black: piece.color === 0 }">
     <!-- QUEEN -->
     <svg
       v-if="piece.class === 0"

@@ -8,3 +8,11 @@ type Spot struct {
 	rank          int
 	passantTarget int
 }
+
+func (s *Spot) GetFile() int {
+	return s.file
+}
+
+func (s *Spot) GetRank() int {
+	return s.rank
+}

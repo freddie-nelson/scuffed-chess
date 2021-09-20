@@ -3,6 +3,7 @@ package chess
 import (
 	"fmt"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -17,6 +18,8 @@ type GameController struct {
 	color         int
 	opponentColor int
 	board         *Board
+	started       bool
+	startTime     int
 	ended         bool
 	endState      string
 	turn          int
@@ -42,10 +45,106 @@ func NewGame(code string) *GameController {
 	// create board
 	g.board = NewBoard()
 
-	startingFEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	startingFEN := "p7/8/1k6/8/3K4/8/8/2Q5 b - - 9 5"
 	g.fromFENString(startingFEN)
 
 	return &g
+}
+
+func (g *GameController) StartGame() {
+	if g.started {
+		return
+	}
+
+	g.started = true
+	g.startTime = int(time.Now().UnixNano() / 100000)
+}
+
+// MakeMove checks if move is valid and then plays that move if it is
+// @returns wether the move was made or not
+func (g *GameController) MakeMove(file, rank, dFile, dRank int) bool {
+	if g.board.IsSpotOffBoard(file, rank) || g.board.IsSpotOffBoard(dFile, dRank) {
+		return false
+	}
+
+	start := &g.board.grid[file][rank]
+	dest := &g.board.grid[dFile][dRank]
+
+	if !start.containsPiece || start.piece.color != g.turn {
+		return false
+	}
+
+	valid := false
+	validMoves := g.board.GetValidMoves(start, g.GetOpponentColor(g.turn))
+
+	// check if dest is in validMoves
+	for _, m := range validMoves {
+		if m.file == dFile && m.rank == dRank {
+			valid = true
+		}
+	}
+
+	movedPiece := false
+	if valid {
+		movedPiece = g.board.MovePiece(start, dest, g.turn)
+	}
+
+	if movedPiece {
+		// update time control
+		player := g.CurrentlyPlaying()
+		now := int(time.Now().UnixNano() / 100000)
+
+		// correct last move time for first moves
+		if player.timeOfLastMove == 0 {
+			if g.turn == White {
+				player.timeOfLastMove = g.startTime
+			} else {
+				player.timeOfLastMove = g.You.timeOfLastMove
+			}
+		}
+
+		player.time -= now - player.timeOfLastMove
+		player.timeOfLastMove = now
+
+		g.NextTurn(g.turn, g.GetOpponentColor(g.turn))
+
+		return true
+	} else {
+		return false
+	}
+}
+
+func (g *GameController) GetValidMoves(file, rank, opponentColor int) []Spot {
+	if g.board.IsSpotOffBoard(file, rank) {
+		return []Spot{}
+	}
+
+	return g.board.GetValidMoves(&g.board.grid[file][rank], opponentColor)
+}
+
+func (g *GameController) GetOpponentColor(color int) int {
+	if color == White {
+		return Black
+	} else {
+		return White
+	}
+}
+
+// CurrentlyPlaying returns the player that is currently playing or nil
+func (g *GameController) CurrentlyPlaying() *Player {
+	if !g.started {
+		return nil
+	}
+
+	if g.turn == White {
+		return g.You
+	} else {
+		return g.Opponent
+	}
+}
+
+func (g *GameController) IsCurrentlyPlaying(p *Player) bool {
+	return p != nil && p == g.CurrentlyPlaying()
 }
 
 func (g *GameController) BroadcastData() {
@@ -57,6 +156,9 @@ func (g *GameController) BroadcastData() {
 	playersJSON := fmt.Sprintf("{ \"you\": { \"username\": \"%s\", \"time\": %d }, \"opponent\": { \"username\": \"%s\", \"time\": %d } }", g.You.name, g.You.time, g.Opponent.name, g.Opponent.time)
 	g.You.s.Emit("game:players", playersJSON)
 	g.Opponent.s.Emit("game:players", playersJSON)
+
+	g.You.s.Emit("game:end-state", g.endState)
+	g.Opponent.s.Emit("game:end-state", g.endState)
 }
 
 func (g *GameController) toFENString() string {
@@ -250,7 +352,7 @@ func (g *GameController) NextTurn(color int, opponentColor int) {
 	if g.board.IsStalemate(opponentColor, color) {
 		g.ended = true
 
-		if g.board.IsKingInCheck(opponentColor, color, nil) {
+		if g.board.IsKingInCheck(opponentColor, color) {
 			g.endState = "checkmate"
 		} else {
 			g.endState = "stalemate"

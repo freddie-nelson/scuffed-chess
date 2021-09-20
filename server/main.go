@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -60,10 +61,59 @@ func main() {
 		p := c.NewPlayer(username, true, s)
 		g.Opponent = p
 
+		g.StartGame()
 		g.BroadcastData()
 		log.Printf("join game (%s): %s \n", username, code)
 
 		return code
+	})
+
+	server.OnEvent("/", "game:move", func(s socketio.Conn, code string, file, rank, dFile, dRank int) bool {
+		if _, exists := games[code]; !exists {
+			return false
+		}
+
+		g := games[code]
+		madeMove := false
+		if (g.You.CompareID(s.ID()) && g.IsCurrentlyPlaying(g.You)) || (g.Opponent.CompareID(s.ID()) && g.IsCurrentlyPlaying(g.Opponent)) {
+			madeMove = g.MakeMove(file, rank, dFile, dRank)
+		}
+
+		g.BroadcastData()
+		log.Printf("made move (%s): (%d, %d) (%d, %d) \n", code, file, rank, dFile, dRank)
+
+		return madeMove
+	})
+
+	server.OnEvent("/", "game:valid-moves", func(s socketio.Conn, code string, file, rank int) string {
+		if _, exists := games[code]; !exists {
+			return "[]"
+		}
+
+		g := games[code]
+		moves := []c.Spot{}
+		if g.You.CompareID(s.ID()) {
+			moves = g.GetValidMoves(file, rank, c.Black)
+		} else if g.Opponent.CompareID(s.ID()) {
+			moves = g.GetValidMoves(file, rank, c.White)
+		}
+
+		if moves != nil {
+			json := "["
+
+			for i := 0; i < len(moves); i++ {
+				if i != 0 {
+					json += ","
+				}
+
+				json += fmt.Sprintf("{ \"file\": %d, \"rank\": %d }", moves[i].GetFile(), moves[i].GetRank())
+
+			}
+
+			return json + "]"
+		} else {
+			return "[]"
+		}
 	})
 
 	go server.Serve()

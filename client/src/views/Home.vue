@@ -78,6 +78,7 @@
 </template>
 
 <script lang="ts">
+import { Color } from "@/utils/chess";
 import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -137,6 +138,8 @@ export default defineComponent({
               query: { code: code, opponent: "true" },
             });
             store.commit("SET_IN_GAME", true);
+            store.commit("SET_GAME_CODE", code);
+            store.commit("SET_COLOR", Color.Black);
           } else {
             usernameError.value = "Failed to join game.";
           }
@@ -156,7 +159,9 @@ export default defineComponent({
       store.state.socket.emit("game:create", username.value, (code: string) => {
         if (code) {
           router.push({ name: "Game", query: { code: code } });
+          store.commit("SET_GAME_CODE", code);
           store.commit("SET_IN_GAME", true);
+          store.commit("SET_COLOR", Color.White);
         } else {
           usernameError.value = "Failed to create game.";
         }

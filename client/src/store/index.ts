@@ -1,4 +1,4 @@
-import { Game } from "@/utils/chess";
+import { Color, Game } from "@/utils/chess";
 import { createStore, useStore as vuexUseStore } from "vuex";
 
 export interface Toast {
@@ -30,7 +30,9 @@ export interface Player {
 export interface State {
   toastQueue: Toast[];
   isConnected: boolean;
+  color: Color;
   inGame: boolean;
+  gameCode: string;
   game: Game;
   socket: Socket;
   you?: Player;
@@ -41,6 +43,8 @@ export default createStore<State>({
   state: {
     toastQueue: [],
     isConnected: false,
+    color: Color.White,
+    gameCode: "",
     inGame: false,
 
     // test data
@@ -70,6 +74,14 @@ export default createStore<State>({
 
     SET_IS_CONNECTED(state, isConnected: boolean) {
       state.isConnected = isConnected;
+    },
+
+    SET_COLOR(state, color: Color) {
+      state.color = color;
+    },
+
+    SET_GAME_CODE(state, code: string) {
+      state.gameCode = code;
     },
 
     SET_IN_GAME(state, inGame: boolean) {
