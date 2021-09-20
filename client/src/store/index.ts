@@ -58,6 +58,10 @@ export default createStore<State>({
     SET_IN_GAME(state, inGame: boolean) {
       state.inGame = inGame;
     },
+
+    SET_GAME(state, game: Game) {
+      state.game = game;
+    },
   },
   actions: {},
   modules: {},

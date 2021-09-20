@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 )
@@ -42,13 +43,104 @@ func NewGame(code string) *GameController {
 	g.board = NewBoard()
 
 	startingFEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	g.GenerateFromFENString(startingFEN)
+	g.fromFENString(startingFEN)
 
 	return &g
 }
 
-// GenerateFromFENString creates a particular board position from a provided valid FEN string
-func (g *GameController) GenerateFromFENString(fen string) {
+func (g *GameController) BroadcastData() {
+	fen := g.toFENString()
+
+	g.You.s.Emit("game:fen", fen)
+	g.Opponent.s.Emit("game:fen", fen)
+}
+
+func (g *GameController) toFENString() string {
+	fen := ""
+
+	enPassantTarget := "-"
+
+	empty := '0'
+	for rank := 0; rank < Size; rank++ {
+		for file := 0; file < Size; file++ {
+			s := g.board.grid[file][rank]
+
+			if s.passantTarget > 0 {
+				enPassantTarget = g.fileAndRankToLocation(file, rank)
+			}
+
+			if s.containsPiece {
+				if empty > '0' {
+					fen += string(empty)
+				}
+				empty = '0'
+
+				piece := 'k'
+				switch s.piece.class {
+				case King:
+					piece = 'k'
+				case Queen:
+					piece = 'q'
+				case Rook:
+					piece = 'r'
+				case Knight:
+					piece = 'n'
+				case Bishop:
+					piece = 'b'
+				case Pawn:
+					piece = 'p'
+				}
+
+				if s.piece.color == White {
+					fen += strings.ToUpper(string(piece))
+				} else {
+					fen += string(piece)
+				}
+
+			} else {
+				empty++
+			}
+		}
+
+		if empty > '0' {
+			fen += string(empty)
+		}
+		empty = '0'
+		fen += "/"
+	}
+	fen = fen[:len(fen)-1]
+
+	// turn
+	if g.turn == White {
+		fen += " w "
+	} else {
+		fen += " b "
+	}
+
+	// castling rights
+	if g.whiteCastling.kingside {
+		fen += "K"
+	}
+	if g.whiteCastling.queenside {
+		fen += "Q"
+	}
+	if g.blackCastling.kingside {
+		fen += "k"
+	}
+	if g.blackCastling.queenside {
+		fen += "q"
+	}
+
+	fen += " " + enPassantTarget
+
+	fen += fmt.Sprintf(" %d", g.halfmoves)
+	fen += fmt.Sprintf(" %d", g.fullmoves)
+
+	return fen
+}
+
+// fromFENString creates a particular board position from a provided valid FEN string
+func (g *GameController) fromFENString(fen string) {
 	piecePlacements := strings.Split(fen, "/")
 
 	last := strings.Split(piecePlacements[7], " ")
@@ -90,7 +182,14 @@ func (g *GameController) GenerateFromFENString(fen string) {
 
 	// fullmoves and halfmoves
 	g.halfmoves = int(fields[3][0] - '0')
+	if len(fields[3]) == 2 {
+		g.halfmoves += int(fields[3][1] - '0')
+	}
+
 	g.fullmoves = int(fields[4][0] - '0')
+	if len(fields[4]) == 2 {
+		g.halfmoves += int(fields[4][1] - '0')
+	}
 
 	// place pieces
 	for rank, fenRank := range piecePlacements {
@@ -135,6 +234,10 @@ func (g *GameController) locationToFileAndRank(loc string) (int, int) {
 	file := int(loc[0] - 'a')
 	rank := 8 - int(loc[1]-'0')
 	return file, rank
+}
+
+func (g *GameController) fileAndRankToLocation(file, rank int) string {
+	return string('a'+file) + string('0'+(8-rank))
 }
 
 // NextTurn performs end game state checks and if game does not end then proceeds to next turn

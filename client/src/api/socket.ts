@@ -1,4 +1,5 @@
 import store from "@/store";
+import Chess from "@/utils/chess";
 import io from "socket.io-client";
 
 const SERVER_URL =
@@ -13,4 +14,13 @@ export default async function () {
   // track connection status
   socket.on("connect", () => store.commit("SET_IS_CONNECTED", true));
   socket.on("disconnect", () => store.commit("SET_IS_CONNECTED", false));
+
+  // game events
+  socket.on("game:fen", (fen: string) => {
+    try {
+      store.commit("SET_GAME", Chess.fromFENString(fen));
+    } catch (error) {
+      store.commit("ADD_TOAST", { text: "Error while parsing game data.", duration: 2000 });
+    }
+  });
 }

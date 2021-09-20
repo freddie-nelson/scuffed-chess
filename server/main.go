@@ -60,6 +60,7 @@ func main() {
 		p := c.NewPlayer(username, true, s)
 		g.Opponent = p
 
+		g.BroadcastData()
 		log.Printf("join game (%s): %s \n", username, code)
 
 		return code

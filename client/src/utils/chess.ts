@@ -3,7 +3,6 @@ export enum Color {
   Black,
 }
 
-// Enum type of piece
 export enum Class {
   Queen,
   King,
@@ -13,7 +12,6 @@ export enum Class {
   Pawn,
 }
 
-// Piece : generic class for a chess piece
 export interface Piece {
   color: Color;
   class: Class;
