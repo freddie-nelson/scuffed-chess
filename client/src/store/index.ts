@@ -22,12 +22,19 @@ export interface Socket {
   compress(compress: boolean): Socket;
 }
 
+export interface Player {
+  username: string;
+  time: number;
+}
+
 export interface State {
   toastQueue: Toast[];
   isConnected: boolean;
   inGame: boolean;
   game: Game;
   socket: Socket;
+  you?: Player;
+  opponent?: Player;
 }
 
 export default createStore<State>({
@@ -35,6 +42,16 @@ export default createStore<State>({
     toastQueue: [],
     isConnected: false,
     inGame: false,
+
+    // test data
+    you: {
+      username: "Freddie",
+      time: 0,
+    },
+    opponent: {
+      username: "GM Hikaru",
+      time: 0,
+    },
 
     // @ts-expect-error socket will be defined before app loads
     socket: undefined,
@@ -61,6 +78,11 @@ export default createStore<State>({
 
     SET_GAME(state, game: Game) {
       state.game = game;
+    },
+
+    SET_PLAYERS(state, players: { you: Player; opponent: Player }) {
+      state.you = players.you;
+      state.opponent = players.opponent;
     },
   },
   actions: {},

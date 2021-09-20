@@ -1,6 +1,6 @@
 <template>
   <!-- BOARD -->
-  <div class="board flex">
+  <div class="board flex bg-primary-300">
     <div
       class="h-full flex flex-col flex-grow"
       v-for="(file, c) in board"

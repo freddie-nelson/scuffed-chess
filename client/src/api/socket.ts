@@ -23,4 +23,13 @@ export default async function () {
       store.commit("ADD_TOAST", { text: "Error while parsing game data.", duration: 2000 });
     }
   });
+
+  socket.on("game:players", (json: string) => {
+    try {
+      store.commit("SET_PLAYERS", JSON.parse(json));
+    } catch (error) {
+      console.log(error);
+      store.commit("ADD_TOAST", { text: "Error while parsing players data.", duration: 2000 });
+    }
+  });
 }

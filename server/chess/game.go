@@ -53,6 +53,10 @@ func (g *GameController) BroadcastData() {
 
 	g.You.s.Emit("game:fen", fen)
 	g.Opponent.s.Emit("game:fen", fen)
+
+	playersJSON := fmt.Sprintf("{ \"you\": { \"username\": \"%s\", \"time\": %d }, \"opponent\": { \"username\": \"%s\", \"time\": %d } }", g.You.name, g.You.time, g.Opponent.name, g.Opponent.time)
+	g.You.s.Emit("game:players", playersJSON)
+	g.Opponent.s.Emit("game:players", playersJSON)
 }
 
 func (g *GameController) toFENString() string {

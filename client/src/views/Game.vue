@@ -22,12 +22,12 @@
     </c-modal>
 
     <!-- OPPONENT CARD -->
-    <div></div>
+    <c-game-player :player="$store.state.opponent" />
 
     <c-game-board />
 
     <!-- PLAYER CARD -->
-    <div></div>
+    <c-game-player :player="$store.state.you" />
   </main>
 </template>
 
@@ -39,10 +39,11 @@ import { useRouter } from "vue-router";
 import CModal from "@/components/shared/Modal/CModal.vue";
 import CInputText from "@/components/shared/Input/CInputText.vue";
 import CButton from "@/components/shared/Button/CButton.vue";
+import CGameBoard from "@/components/app/Game/CGameBoard.vue";
+import CGamePlayer from "@/components/app/Game/CGamePlayer.vue";
 
 import { Icon } from "@iconify/vue";
 import copyIcon from "@iconify-icons/feather/copy";
-import CGameBoard from "@/components/app/Game/CGameBoard.vue";
 
 export default defineComponent({
   name: "Game",
@@ -52,6 +53,7 @@ export default defineComponent({
     CButton,
     Icon,
     CGameBoard,
+    CGamePlayer,
   },
   setup() {
     const store = useStore();
@@ -59,7 +61,7 @@ export default defineComponent({
 
     onBeforeMount(() => {
       if (!store.state.inGame) {
-        router.push({ name: "Home" });
+        // router.push({ name: "Home" });
       }
     });
 
