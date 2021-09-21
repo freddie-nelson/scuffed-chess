@@ -29,6 +29,7 @@ export interface Player {
 
 export interface State {
   toastQueue: Toast[];
+  theme: string;
   isConnected: boolean;
   color: Color;
   inGame: boolean;
@@ -43,6 +44,7 @@ export interface State {
 export default createStore<State>({
   state: {
     toastQueue: [],
+    theme: "",
     isConnected: false,
     color: Color.White,
     gameCode: "",
@@ -68,6 +70,10 @@ export default createStore<State>({
     },
     REMOVE_TOAST(state) {
       state.toastQueue.shift();
+    },
+
+    SET_THEME(state, theme: string) {
+      state.theme = theme;
     },
 
     SET_SOCKET(state, socket: Socket) {

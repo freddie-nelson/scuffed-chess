@@ -21,8 +21,8 @@ module.exports = {
       },
 
       colors: {
-        primaryColor: colors.emerald,
-        accentColor: colors.lime,
+        primaryColor: colors.blue,
+        accentColor: colors.teal,
         primaryColorDark: colors.violet,
         accentColorDark: colors.fuchsia,
 

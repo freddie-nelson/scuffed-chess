@@ -99,7 +99,7 @@ export default defineComponent({
       required: true,
     },
     options: {
-      type: Array as () => String[],
+      type: Array as () => string[],
       required: true,
     },
   },
