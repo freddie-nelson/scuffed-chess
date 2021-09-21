@@ -21,6 +21,27 @@
       <h1 class="font-bold text-3xl">Joining game...</h1>
     </c-modal>
 
+    <c-modal
+      v-if="$store.state.ended"
+      class="flex flex-col items-center justify-center max-w-sm w-full"
+    >
+      <h1 class="font-bold text-3xl">
+        {{
+          $store.state.ended[0].toUpperCase() + $store.state.ended.substring(1)
+        }}
+      </h1>
+      <h2
+        v-if="$store.state.ended === 'checkmate'"
+        class="mt-1 font-bold text-xl"
+      >
+        {{ $store.state.game.turn === 0 ? "Black" : "White" }} has won.
+      </h2>
+
+      <c-button class="mt-4 h-16 w-full" @click="resetGame">
+        Leave Game
+      </c-button>
+    </c-modal>
+
     <!-- OPPONENT CARD -->
     <c-game-player :player="$store.state.opponent" />
 
@@ -32,7 +53,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount } from "vue";
+import { computed, defineComponent, onBeforeMount, watch } from "vue";
 import { useStore } from "@/store";
 import { useRouter } from "vue-router";
 
@@ -61,7 +82,7 @@ export default defineComponent({
 
     onBeforeMount(() => {
       if (!store.state.inGame) {
-        // router.push({ name: "Home" });
+        router.push({ name: "Home" });
       }
     });
 
@@ -93,12 +114,34 @@ export default defineComponent({
       return store.state.inGame && !store.state.game && isOpponent;
     });
 
+    watch(
+      computed(() => store.state.ended),
+      (ended) => {
+        if (ended === "disconnect") {
+          resetGame();
+        }
+      }
+    );
+
+    const resetGame = () => {
+      store.state.socket.emit("game:leave", store.state.gameCode, isOpponent);
+
+      store.commit("SET_GAME", undefined);
+      store.commit("SET_IN_GAME", false);
+      store.commit("SET_GAME_CODE", "");
+      store.commit("SET_ENDED", "");
+
+      router.push({ name: "Home" });
+    };
+
     return {
       code,
       copyCode,
 
       waitingForOpponent,
       joiningGame,
+
+      resetGame,
 
       icons: {
         copy: copyIcon,

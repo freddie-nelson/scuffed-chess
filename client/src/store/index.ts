@@ -37,6 +37,7 @@ export interface State {
   socket: Socket;
   you?: Player;
   opponent?: Player;
+  ended: "" | "stalemate" | "checkmate" | "timeout" | "disconnect";
 }
 
 export default createStore<State>({
@@ -46,6 +47,7 @@ export default createStore<State>({
     color: Color.White,
     gameCode: "",
     inGame: false,
+    ended: "",
 
     // test data
     you: {
@@ -86,6 +88,10 @@ export default createStore<State>({
 
     SET_IN_GAME(state, inGame: boolean) {
       state.inGame = inGame;
+    },
+
+    SET_ENDED(state, ended: "" | "stalemate" | "checkmate" | "disconnect") {
+      state.ended = ended;
     },
 
     SET_GAME(state, game: Game) {

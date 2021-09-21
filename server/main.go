@@ -116,6 +116,30 @@ func main() {
 		}
 	})
 
+	server.OnEvent("/", "game:leave", func(s socketio.Conn, code string, isOpponent bool) bool {
+		if _, exists := games[code]; !exists {
+			return false
+		}
+
+		g := games[code]
+
+		if isOpponent && g.Opponent.CompareID(s.ID()) {
+			g.Opponent = nil
+			g.You.GetSocket().Emit("game:end-state", "disconnect")
+			delete(games, code)
+
+			return true
+		} else if g.You.CompareID((s.ID())) {
+			g.You = nil
+			g.Opponent.GetSocket().Emit("game:end-state", "disconnect")
+			delete(games, code)
+
+			return true
+		} else {
+			return false
+		}
+	})
+
 	go server.Serve()
 	defer server.Close()
 

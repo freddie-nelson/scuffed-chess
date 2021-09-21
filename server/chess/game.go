@@ -45,7 +45,7 @@ func NewGame(code string) *GameController {
 	// create board
 	g.board = NewBoard()
 
-	startingFEN := "p7/8/1k6/8/3K4/8/8/2Q5 b - - 9 5"
+	startingFEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	g.fromFENString(startingFEN)
 
 	return &g
@@ -357,6 +357,8 @@ func (g *GameController) NextTurn(color int, opponentColor int) {
 		} else {
 			g.endState = "stalemate"
 		}
+
+		return
 	}
 
 	g.halfmoves++

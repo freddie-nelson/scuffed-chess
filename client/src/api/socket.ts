@@ -32,4 +32,13 @@ export default async function () {
       store.commit("ADD_TOAST", { text: "Error while parsing players data.", duration: 2000 });
     }
   });
+
+  socket.on("game:end-state", (ended: string) => {
+    try {
+      store.commit("SET_ENDED", ended);
+    } catch (error) {
+      console.log(error);
+      store.commit("ADD_TOAST", { text: "Error while parsing end state data.", duration: 2000 });
+    }
+  });
 }
