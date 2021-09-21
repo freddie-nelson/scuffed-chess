@@ -50,7 +50,7 @@ func (p *Piece) PruneMove(originalBoard *Board, file, rank, dFile, dRank int) bo
 
 // FindValidMoves finds and returns all the legal moves a piece can make from it's current position
 // @returns array of all valid moves
-func (p *Piece) FindValidMoves(b *Board, file int, rank int, opponentColor int, pruneChecks bool) ([]Spot, bool) {
+func (p *Piece) FindValidMoves(b *Board, file int, rank int, opponentColor int, pruneChecks bool, castlingRights *CastlingRights) ([]Spot, bool) {
 	validMoves := make([]Spot, 0, 30)
 
 	// bishop offsets
@@ -75,6 +75,11 @@ func (p *Piece) FindValidMoves(b *Board, file int, rank int, opponentColor int, 
 		checksKing = calculateMovesFromOffsets(b, &validMoves, file, rank, queenOffs, queenOffs, Size, true, opponentColor)
 	case King:
 		checksKing = calculateMovesFromOffsets(b, &validMoves, file, rank, queenOffs, queenOffs, 1, true, opponentColor)
+
+		// castling
+		if p.moves == 0 && castlingRights != nil {
+			checkCastling(b, &validMoves, file, rank, castlingRights)
+		}
 	case Rook:
 		checksKing = calculateMovesFromOffsets(b, &validMoves, file, rank, rookXOffs, rookYOffs, Size, true, opponentColor)
 		if checksKing {
@@ -167,6 +172,36 @@ func isMoveAlreadyAdded(validMoves *[]Spot, file int, rank int) bool {
 	}
 
 	return false
+}
+
+func checkCastling(b *Board, validMoves *[]Spot, f, r int, castlingRights *CastlingRights) {
+	// queenside
+	if b.grid[0][r].containsPiece && b.grid[0][r].piece.class == Rook && b.grid[0][r].piece.color == b.grid[f][r].piece.color && b.grid[0][r].piece.moves == 0 {
+		canQueenside := true
+		for file := 1; file < f; file++ {
+			if b.grid[file][r].containsPiece {
+				canQueenside = false
+			}
+		}
+
+		if canQueenside {
+			*validMoves = append(*validMoves, Spot{file: 2, rank: r})
+		}
+	}
+
+	// kingside
+	if b.grid[Size-1][r].containsPiece && b.grid[Size-1][r].piece.class == Rook && b.grid[Size-1][r].piece.color == b.grid[f][r].piece.color && b.grid[Size-1][r].piece.moves == 0 {
+		canKingside := true
+		for file := f + 1; file < Size-1; file++ {
+			if b.grid[file][r].containsPiece {
+				canKingside = false
+			}
+		}
+
+		if canKingside {
+			*validMoves = append(*validMoves, Spot{file: 6, rank: r})
+		}
+	}
 }
 
 func checkIfPawnCanTake(b *Board, validMoves *[]Spot, file int, rank int, opponentColor int) bool {

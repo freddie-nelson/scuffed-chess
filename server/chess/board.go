@@ -1,5 +1,9 @@
 package chess
 
+import (
+	"log"
+)
+
 const Size = 8
 
 // Board handles game logic about the board and drawing board to console
@@ -23,12 +27,12 @@ func NewBoard() *Board {
 }
 
 // GetValidMoves returns the moves a piece can play if the given spot contains a piece else returns {}
-func (b *Board) GetValidMoves(s *Spot, opponentColor int) []Spot {
+func (b *Board) GetValidMoves(s *Spot, opponentColor int, castlingRights *CastlingRights) []Spot {
 	if !s.containsPiece {
 		return []Spot{}
 	}
 
-	validMoves, _ := s.piece.FindValidMoves(b, s.file, s.rank, opponentColor, true)
+	validMoves, _ := s.piece.FindValidMoves(b, s.file, s.rank, opponentColor, true, castlingRights)
 	return validMoves
 }
 
@@ -81,6 +85,31 @@ func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 		opponentColor = White
 	}
 
+	castling := false
+	var rookSpot *Spot = nil
+	var rookDest *Spot = nil
+	var rookPiece *Piece = nil
+	if piece.class == King && piece.moves == 1 && (destination.file == 2 || destination.file == 6) {
+		rookDest = &b.grid[3][start.rank]
+		rookSpot = &b.grid[0][start.rank]
+		if destination.file == 6 {
+			rookDest = &b.grid[5][start.rank]
+			rookSpot = &b.grid[Size-1][start.rank]
+		}
+
+		rookPiece = rookSpot.piece
+
+		rookSpot.piece = nil
+		rookSpot.containsPiece = false
+
+		rookDest.piece = rookPiece
+		rookDest.containsPiece = true
+
+		log.Printf("rookSpot: (%d, %d), rookDest: (%d, %d)", rookSpot.file, rookSpot.rank, rookDest.file, rookDest.rank)
+
+		castling = true
+	}
+
 	if b.IsKingInCheck(turn, opponentColor) {
 		piece.moves--
 
@@ -94,6 +123,14 @@ func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 			passantSpot := &b.grid[destination.file][start.rank]
 			passantSpot.piece = passantPiece
 			passantSpot.containsPiece = true
+		}
+
+		if castling {
+			rookSpot.piece = piece
+			rookSpot.containsPiece = true
+
+			rookDest.piece = nil
+			rookDest.containsPiece = false
 		}
 
 		turnSuccessful = false
@@ -120,7 +157,7 @@ func (b *Board) IsKingInCheck(color int, opponentColor int) bool {
 			// }
 
 			if board[file][rank].containsPiece && board[file][rank].piece.color == opponentColor {
-				_, inCheck := board[file][rank].piece.FindValidMoves(b, file, rank, color, false)
+				_, inCheck := board[file][rank].piece.FindValidMoves(b, file, rank, color, false, nil)
 				if inCheck {
 					return true
 				}
@@ -134,7 +171,7 @@ func (b *Board) IsKingInCheck(color int, opponentColor int) bool {
 // IsStalemate returns true if color cannot play any moves but is not in check
 func (b *Board) IsStalemate(color int, opponentColor int) bool {
 	king := b.GetKingSpot(color)
-	kingMoves, _ := king.piece.FindValidMoves(b, king.file, king.rank, opponentColor, true)
+	kingMoves, _ := king.piece.FindValidMoves(b, king.file, king.rank, opponentColor, true, nil)
 
 	// when king cannot move out of check
 	// check if any move by color can get king out of check
@@ -143,7 +180,7 @@ func (b *Board) IsStalemate(color int, opponentColor int) bool {
 			for file := 0; file < Size; file++ {
 				if b.grid[file][rank].containsPiece && b.grid[file][rank].piece.color == color && b.grid[file][rank].piece.class != King {
 					piece := b.grid[file][rank].piece
-					moves, _ := piece.FindValidMoves(b, file, rank, opponentColor, true)
+					moves, _ := piece.FindValidMoves(b, file, rank, opponentColor, true, nil)
 
 					// since moves are pruned for illegal moves
 					// if any move is available then it will put king out of check

@@ -45,7 +45,7 @@ func NewGame(code string) *GameController {
 	// create board
 	g.board = NewBoard()
 
-	startingFEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	startingFEN := "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
 	g.fromFENString(startingFEN)
 
 	return &g
@@ -75,7 +75,11 @@ func (g *GameController) MakeMove(file, rank, dFile, dRank int) bool {
 	}
 
 	valid := false
-	validMoves := g.board.GetValidMoves(start, g.GetOpponentColor(g.turn))
+	castlingRights := g.whiteCastling
+	if g.turn == Black {
+		castlingRights = g.blackCastling
+	}
+	validMoves := g.board.GetValidMoves(start, g.GetOpponentColor(g.turn), castlingRights)
 
 	// check if dest is in validMoves
 	for _, m := range validMoves {
@@ -119,7 +123,12 @@ func (g *GameController) GetValidMoves(file, rank, opponentColor int) []Spot {
 		return []Spot{}
 	}
 
-	return g.board.GetValidMoves(&g.board.grid[file][rank], opponentColor)
+	castlingRights := g.whiteCastling
+	if opponentColor == White {
+		castlingRights = g.blackCastling
+	}
+
+	return g.board.GetValidMoves(&g.board.grid[file][rank], opponentColor, castlingRights)
 }
 
 func (g *GameController) GetOpponentColor(color int) int {
