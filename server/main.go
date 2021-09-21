@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -11,9 +12,16 @@ import (
 	"github.com/rs/cors"
 )
 
+const PRODUCTION = false
+
 var games map[string]*c.GameController
 
 func main() {
+	// disable logging in production
+	if PRODUCTION {
+		log.SetOutput(ioutil.Discard)
+	}
+
 	games = make(map[string]*c.GameController)
 	server := socketio.NewServer(nil)
 
@@ -155,6 +163,6 @@ func main() {
 
 	handler := c.Handler(mux)
 
-	log.Println("Serving at localhost:8000")
-	log.Fatal(http.ListenAndServe(":8000", handler))
+	fmt.Println("Serving at localhost:8000")
+	fmt.Println(http.ListenAndServe(":8000", handler))
 }

@@ -2,7 +2,8 @@
   <!-- BOARD -->
   <div ref="boardElement" class="board flex bg-primary-300 relative">
     <div
-      class="h-full flex flex-col flex-grow"
+      class="h-full flex flex-grow"
+      :class="flip ? 'flex-col-reverse' : 'flex-col'"
       v-for="(file, c) in board"
       :key="c"
     >
@@ -44,8 +45,18 @@
         items-center
       "
       :style="{
-        top: promotionLoc.dRank === 0 ? '0' : null,
-        bottom: promotionLoc.dRank === 7 ? '0' : null,
+        top:
+          promotionLoc.dRank === 0 && !flip
+            ? '0'
+            : promotionLoc.dRank === 7
+            ? '0'
+            : null,
+        bottom:
+          promotionLoc.dRank === 7 && !flip
+            ? '0'
+            : promotionLoc.dRank === 0
+            ? '0'
+            : null,
         left: `${promotionLoc.file * (100 / 8)}%`,
       }"
     >
@@ -84,7 +95,13 @@ import { Class, Color } from "@/utils/chess";
 export default defineComponent({
   name: "CGameBoard",
   components: { CGamePiece },
-  setup() {
+  props: {
+    flip: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props) {
     const store = useStore();
     const socket = store.state.socket;
 
@@ -224,10 +241,17 @@ export default defineComponent({
       const file = Math.floor(boardX / spotRect.width);
       const rank = Math.floor(boardY / spotRect.height);
 
-      return {
-        file,
-        rank,
-      };
+      if (props.flip) {
+        return {
+          file: file,
+          rank: 7 - rank,
+        };
+      } else {
+        return {
+          file,
+          rank,
+        };
+      }
     };
 
     useComponentEvent(document.body, "mouseup", (event) => {
