@@ -115,7 +115,6 @@ export default defineComponent({
       if (!isDragging) return;
 
       isDragging = false;
-      validMoves.value.length = 0;
 
       draggingHome.value = {
         file: -1,
@@ -129,12 +128,17 @@ export default defineComponent({
 
       if (
         (draggingPiece.file == dFile && draggingPiece.rank == dRank) ||
-        store.state.game.turn !== store.state.color
+        store.state.game.turn !== store.state.color ||
+        validMoves.value.findIndex(
+          (m) => m.file == dFile && m.rank == dRank
+        ) === -1
       ) {
         return;
       } else {
         makeMove(draggingPiece.file, draggingPiece.rank, dFile, dRank);
       }
+
+      validMoves.value.length = 0;
     };
 
     const mouseToFileRank = (
