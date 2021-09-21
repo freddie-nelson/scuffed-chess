@@ -68,7 +68,7 @@ func main() {
 		return code
 	})
 
-	server.OnEvent("/", "game:move", func(s socketio.Conn, code string, file, rank, dFile, dRank int) bool {
+	server.OnEvent("/", "game:move", func(s socketio.Conn, code string, file, rank, dFile, dRank, promotion int) bool {
 		if _, exists := games[code]; !exists {
 			return false
 		}
@@ -76,7 +76,7 @@ func main() {
 		g := games[code]
 		madeMove := false
 		if (g.You.CompareID(s.ID()) && g.IsCurrentlyPlaying(g.You)) || (g.Opponent.CompareID(s.ID()) && g.IsCurrentlyPlaying(g.Opponent)) {
-			madeMove = g.MakeMove(file, rank, dFile, dRank)
+			madeMove = g.MakeMove(file, rank, dFile, dRank, promotion)
 		}
 
 		g.BroadcastData()

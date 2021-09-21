@@ -1,6 +1,6 @@
 <template>
   <!-- BOARD -->
-  <div ref="boardElement" class="board flex bg-primary-300">
+  <div ref="boardElement" class="board flex bg-primary-300 relative">
     <div
       class="h-full flex flex-col flex-grow"
       v-for="(file, c) in board"
@@ -27,6 +27,49 @@
         />
       </div>
     </div>
+
+    <div
+      v-if="promotionLoc"
+      class="
+        absolute
+        bg-bg-dark
+        rounded-lg
+        w-1/8
+        py-4
+        my-4
+        transform
+        scale-125
+        flex flex-col
+        justify-center
+        items-center
+      "
+      :style="{
+        top: promotionLoc.dRank === 0 ? '0' : null,
+        bottom: promotionLoc.dRank === 7 ? '0' : null,
+        left: `${promotionLoc.file * (100 / 8)}%`,
+      }"
+    >
+      <c-game-piece
+        class="cursor-pointer"
+        :piece="{ color: $store.state.color, class: 0 }"
+        @click="promotePawn(0)"
+      />
+      <c-game-piece
+        class="mt-3 cursor-pointer"
+        :piece="{ color: $store.state.color, class: 2 }"
+        @click="promotePawn(2)"
+      />
+      <c-game-piece
+        class="mt-3 cursor-pointer"
+        :piece="{ color: $store.state.color, class: 3 }"
+        @click="promotePawn(3)"
+      />
+      <c-game-piece
+        class="mt-3 cursor-pointer"
+        :piece="{ color: $store.state.color, class: 4 }"
+        @click="promotePawn(4)"
+      />
+    </div>
   </div>
 </template>
 
@@ -36,6 +79,7 @@ import { useStore } from "@/store";
 import useComponentEvent from "@/utils/useComponentEvent";
 
 import CGamePiece from "./CGamePiece.vue";
+import { Class, Color } from "@/utils/chess";
 
 export default defineComponent({
   name: "CGameBoard",
@@ -79,7 +123,8 @@ export default defineComponent({
     const dragStart = (file: number, rank: number) => {
       if (
         !board.value[file][rank].containsPiece ||
-        board.value[file][rank].piece?.color !== store.state.color
+        board.value[file][rank].piece?.color !== store.state.color ||
+        promotionLoc.value
       )
         return;
 
@@ -135,6 +180,22 @@ export default defineComponent({
       ) {
         return;
       } else {
+        const lastRank = store.state.color === Color.White ? 0 : 7;
+        if (
+          dRank == lastRank &&
+          board.value[draggingPiece.file][draggingPiece.rank].piece?.class ==
+            Class.Pawn
+        ) {
+          promotionLoc.value = {
+            file: draggingPiece.file,
+            rank: draggingPiece.rank,
+            dFile,
+            dRank,
+          };
+
+          return;
+        }
+
         makeMove(draggingPiece.file, draggingPiece.rank, dFile, dRank);
       }
 
@@ -209,7 +270,8 @@ export default defineComponent({
       file: number,
       rank: number,
       dFile: number,
-      dRank: number
+      dRank: number,
+      promotion: Class = -1
     ) => {
       if (
         store.state.gameCode &&
@@ -229,11 +291,31 @@ export default defineComponent({
           rank,
           dFile,
           dRank,
+          promotion,
           (res: boolean) => {
             console.log(res);
           }
         );
       }
+    };
+
+    const promotionLoc =
+      ref<{ file: number; rank: number; dFile: number; dRank: number } | null>(
+        null
+      );
+
+    const promotePawn = (c: Class) => {
+      if (!promotionLoc.value) return;
+
+      makeMove(
+        promotionLoc.value.file,
+        promotionLoc.value.rank,
+        promotionLoc.value.dFile,
+        promotionLoc.value.dRank,
+        c
+      );
+
+      promotionLoc.value = null;
     };
 
     return {
@@ -245,6 +327,9 @@ export default defineComponent({
 
       highlightedSpot,
       draggingHome,
+
+      promotionLoc,
+      promotePawn,
     };
   },
 });

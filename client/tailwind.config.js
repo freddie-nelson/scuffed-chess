@@ -86,6 +86,10 @@ module.exports = {
 
       width: {
         18: "4.5rem",
+        "1/8": `${100 / 8}%`,
+      },
+      height: {
+        "1/8": `${100 / 8}%`,
       },
 
       translate: ["group-hover"],

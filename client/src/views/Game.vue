@@ -45,7 +45,7 @@
     <!-- OPPONENT CARD -->
     <c-game-player :player="$store.state.opponent" />
 
-    <c-game-board />
+    <c-game-board :flip="$store.state.you.opponent" />
 
     <!-- PLAYER CARD -->
     <c-game-player :player="$store.state.you" />

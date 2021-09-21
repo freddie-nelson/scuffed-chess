@@ -45,7 +45,7 @@ func NewGame(code string) *GameController {
 	// create board
 	g.board = NewBoard()
 
-	startingFEN := "5k2/8/8/8/8/8/8/R3K2R w Kkq - 0 1"
+	startingFEN := "5k2/8/8/8/8/8/p7/4K2R b Kkq - 0 1"
 	g.fromFENString(startingFEN)
 
 	return &g
@@ -62,7 +62,7 @@ func (g *GameController) StartGame() {
 
 // MakeMove checks if move is valid and then plays that move if it is
 // @returns wether the move was made or not
-func (g *GameController) MakeMove(file, rank, dFile, dRank int) bool {
+func (g *GameController) MakeMove(file, rank, dFile, dRank, promotion int) bool {
 	if g.board.IsSpotOffBoard(file, rank) || g.board.IsSpotOffBoard(dFile, dRank) {
 		return false
 	}
@@ -94,6 +94,15 @@ func (g *GameController) MakeMove(file, rank, dFile, dRank int) bool {
 	}
 
 	if movedPiece {
+		// promote pawn
+		lastRank := 0
+		if g.turn == Black {
+			lastRank = Size - 1
+		}
+		if dest.piece.class == Pawn && dest.piece.color == g.turn && dest.rank == lastRank && (promotion == Queen || promotion == Rook || promotion == Bishop || promotion == Knight) {
+			dest.piece.class = promotion
+		}
+
 		// update time control
 		player := g.CurrentlyPlaying()
 		now := int(time.Now().UnixNano() / 100000)
