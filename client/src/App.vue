@@ -17,7 +17,7 @@
   <div id="modals"></div>
 
   <!-- force tailwind to load all font sizes -->
-  <h1
+  <span
     class="
       hidden
       text-xs
@@ -33,8 +33,9 @@
       text-7xl
       text-8xl
       text-9xl
+      bg-gradient-to-r bg-gradient-to-l bg-gradient-to-t bg-gradient-to-b
     "
-  ></h1>
+  ></span>
 </template>
 
 <script lang="ts">
