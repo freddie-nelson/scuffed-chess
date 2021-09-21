@@ -15,6 +15,23 @@
   </div>
 
   <div id="modals"></div>
+
+  <!-- force tailwind to load all font sizes -->
+  <h1
+    class="
+      hidden
+      text-xs
+      text-sm
+      text-base
+      text-lg
+      text-xl
+      text-2xl
+      text-3xl
+      text-4xl
+      text-5xl
+      text-6xl
+    "
+  ></h1>
 </template>
 
 <script lang="ts">
