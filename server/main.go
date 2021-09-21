@@ -159,7 +159,7 @@ func main() {
 	allowedOrigins := []string{"http://localhost:8080", "http://192.168.1.84:8080"}
 
 	if PRODUCTION {
-		port = os.Getenv("PORT")
+		port = ":" + os.Getenv("PORT")
 		allowedOrigins = []string{"scuffedchess.netlify.app"}
 	}
 
