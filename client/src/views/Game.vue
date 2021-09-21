@@ -43,17 +43,20 @@
     </c-modal>
 
     <!-- OPPONENT CARD -->
-    <c-game-player :player="$store.state.opponent" />
+    <c-game-player
+      v-if="$store.state.opponent"
+      :player="$store.state.opponent"
+    />
 
-    <c-game-board :flip="$store.state.color === 0" />
+    <c-game-board :flip="flip" />
 
     <!-- PLAYER CARD -->
-    <c-game-player :player="$store.state.you" />
+    <c-game-player v-if="$store.state.you" :player="$store.state.you" />
   </main>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount, watch } from "vue";
+import { computed, defineComponent, onBeforeMount, ref, watch } from "vue";
 import { useStore } from "@/store";
 import { useRouter } from "vue-router";
 
@@ -134,6 +137,8 @@ export default defineComponent({
       router.push({ name: "Home" });
     };
 
+    const flip = ref(store.state.color === 0);
+
     return {
       code,
       copyCode,
@@ -142,6 +147,8 @@ export default defineComponent({
       joiningGame,
 
       resetGame,
+
+      flip,
 
       icons: {
         copy: copyIcon,

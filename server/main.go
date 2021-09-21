@@ -61,7 +61,7 @@ func main() {
 	})
 
 	server.OnEvent("/", "game:join", func(s socketio.Conn, username string, code string) string {
-		if _, exists := games[code]; !exists {
+		if _, exists := games[code]; !exists || games[code].Opponent != nil {
 			return ""
 		}
 

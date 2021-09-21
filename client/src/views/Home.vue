@@ -30,7 +30,14 @@
         showJoinModal = false;
         usernameError = '';
       "
-      class="max-w-lg w-full flex flex-col items-center justify-center"
+      class="
+        max-w-lg
+        w-full
+        flex flex-col
+        items-center
+        justify-center
+        text-bg-light
+      "
     >
       <h1 class="font-bold text-3xl mb-4">Join Game</h1>
 
@@ -56,7 +63,14 @@
         showCreateModal = false;
         usernameError = '';
       "
-      class="max-w-lg w-full flex flex-col items-center justify-center"
+      class="
+        max-w-lg
+        w-full
+        flex flex-col
+        items-center
+        justify-center
+        text-bg-light
+      "
     >
       <h1 class="font-bold text-3xl mb-4">Create Game</h1>
 

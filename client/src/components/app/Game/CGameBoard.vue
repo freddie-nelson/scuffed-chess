@@ -1,8 +1,8 @@
 <template>
   <!-- BOARD -->
-  <div ref="boardElement" class="board flex bg-primary-300 relative">
+  <div ref="boardElement" class="board flex relative" :class="{ flip }">
     <div
-      class="h-full flex flex-grow"
+      class="file h-full flex flex-grow"
       :class="flip ? 'flex-col-reverse' : 'flex-col'"
       v-for="(file, c) in board"
       :key="c"
@@ -10,7 +10,7 @@
       <div
         v-for="(cell, r) in file"
         :key="r"
-        class="flex flex-grow relative justify-center items-center"
+        class="spot flex flex-grow relative justify-center items-center"
         :class="{
           'bg-primary-300': (c + r) % 2 === 0,
           'bg-primary-700': (c + r) % 2 !== 0,
@@ -195,6 +195,7 @@ export default defineComponent({
           (m) => m.file == dFile && m.rank == dRank
         ) === -1
       ) {
+        validMoves.value.length = 0;
         return;
       } else {
         const lastRank = store.state.color === Color.White ? 0 : 7;
@@ -210,6 +211,7 @@ export default defineComponent({
             dRank,
           };
 
+          validMoves.value.length = 0;
           return;
         }
 
@@ -365,10 +367,50 @@ $board-size: clamp(380px, 50vw, 70vh);
 .board {
   width: $board-size;
   height: $board-size;
+
+  --rounded: 0.35rem;
+
+  .file:nth-of-type(1) .spot:nth-of-type(1) {
+    border-top-left-radius: var(--rounded);
+  }
+
+  .file:nth-of-type(8) .spot:nth-of-type(1) {
+    border-top-right-radius: var(--rounded);
+  }
+
+  .file:nth-of-type(1) .spot:nth-of-type(8) {
+    border-bottom-left-radius: var(--rounded);
+  }
+
+  .file:nth-of-type(8) .spot:nth-of-type(8) {
+    border-bottom-right-radius: var(--rounded);
+  }
+
+  &.flip {
+    .file:nth-of-type(1) .spot:nth-of-type(1) {
+      border-radius: 0;
+      border-bottom-left-radius: var(--rounded);
+    }
+
+    .file:nth-of-type(8) .spot:nth-of-type(1) {
+      border-radius: 0;
+      border-bottom-right-radius: var(--rounded);
+    }
+
+    .file:nth-of-type(1) .spot:nth-of-type(8) {
+      border-radius: 0;
+      border-top-left-radius: var(--rounded);
+    }
+
+    .file:nth-of-type(8) .spot:nth-of-type(8) {
+      border-radius: 0;
+      border-top-right-radius: var(--rounded);
+    }
+  }
 }
 
 .highlight {
-  box-shadow: inset 0 0 0 4px var(--t-main);
+  box-shadow: inset 0 0 0 4px var(--accent-100);
 }
 
 .draggingHome {

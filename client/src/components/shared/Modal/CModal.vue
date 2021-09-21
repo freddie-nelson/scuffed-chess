@@ -10,9 +10,13 @@
         flex
         justify-center
         items-center
-        bg-black bg-opacity-50
+        bg-transparent
       "
     >
+      <div
+        class="absolute top-0 left-0 w-full h-full bg-bg-dark opacity-30"
+      ></div>
+
       <section v-bind="$attrs" class="p-12 rounded-xl relative bg-bg-dark">
         <button
           v-if="closeable"

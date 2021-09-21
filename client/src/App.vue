@@ -38,9 +38,10 @@ export default defineComponent({
 
     onMounted(() => {
       const html = document.querySelector("html");
-      html?.classList.add(themes[0]);
+      const theme = localStorage.getItem("theme") || themes[0];
+      html?.classList.add(theme);
 
-      store.commit("SET_THEME", themes[0]);
+      store.commit("SET_THEME", theme);
     });
   },
 });

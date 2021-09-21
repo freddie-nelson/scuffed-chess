@@ -171,9 +171,8 @@ func (g *GameController) BroadcastData() {
 	g.You.s.Emit("game:fen", fen)
 	g.Opponent.s.Emit("game:fen", fen)
 
-	playersJSON := fmt.Sprintf("{ \"you\": { \"username\": \"%s\", \"time\": %d }, \"opponent\": { \"username\": \"%s\", \"time\": %d } }", g.You.name, g.You.time, g.Opponent.name, g.Opponent.time)
-	g.You.s.Emit("game:players", playersJSON)
-	g.Opponent.s.Emit("game:players", playersJSON)
+	g.You.s.Emit("game:players", fmt.Sprintf("{ \"you\": { \"username\": \"%s\", \"time\": %d }, \"opponent\": { \"username\": \"%s\", \"time\": %d } }", g.You.name, g.You.time, g.Opponent.name, g.Opponent.time))
+	g.Opponent.s.Emit("game:players", fmt.Sprintf("{ \"you\": { \"username\": \"%s\", \"time\": %d }, \"opponent\": { \"username\": \"%s\", \"time\": %d } }", g.Opponent.name, g.Opponent.time, g.You.name, g.You.time))
 
 	g.You.s.Emit("game:end-state", g.endState)
 	g.Opponent.s.Emit("game:end-state", g.endState)

@@ -51,16 +51,6 @@ export default createStore<State>({
     inGame: false,
     ended: "",
 
-    // test data
-    you: {
-      username: "Freddie",
-      time: 0,
-    },
-    opponent: {
-      username: "GM Hikaru",
-      time: 0,
-    },
-
     // @ts-expect-error socket will be defined before app loads
     socket: undefined,
   },
@@ -74,6 +64,7 @@ export default createStore<State>({
 
     SET_THEME(state, theme: string) {
       state.theme = theme;
+      localStorage.setItem("theme", theme);
     },
 
     SET_SOCKET(state, socket: Socket) {
