@@ -6,13 +6,14 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 
 	c "github.com/freddie-nelson/scuffed-chess/server/chess"
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/rs/cors"
 )
 
-const PRODUCTION = false
+const PRODUCTION = true
 
 var games map[string]*c.GameController
 
@@ -154,8 +155,16 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/socket.io/", server)
 
+	port := ":8000"
+	allowedOrigins := []string{"http://localhost:8080", "http://192.168.1.84:8080"}
+
+	if PRODUCTION {
+		port = os.Getenv("PORT")
+		allowedOrigins = []string{"scuffedchess.netlify.app"}
+	}
+
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080", "http://192.168.1.84:8080"},
+		AllowedOrigins:   allowedOrigins,
 		AllowCredentials: true,
 		// Enable Debugging for testing, consider disabling in production
 		Debug: false,
@@ -163,6 +172,6 @@ func main() {
 
 	handler := c.Handler(mux)
 
-	fmt.Println("Serving at localhost:8000")
-	fmt.Println(http.ListenAndServe(":8000", handler))
+	fmt.Println("Serving at localhost" + port)
+	fmt.Println(http.ListenAndServe(port, handler))
 }

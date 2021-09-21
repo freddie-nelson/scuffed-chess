@@ -5,7 +5,7 @@ import io from "socket.io-client";
 const SERVER_URL =
   process.env.NODE_ENV === "development"
     ? `http://${window.location.hostname}:8000`
-    : "https://scuffed-chess.herokuapp.com/";
+    : "https://scuffedchess.herokuapp.com/";
 
 export default async function () {
   const socket = io(SERVER_URL);
