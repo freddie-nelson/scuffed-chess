@@ -197,7 +197,7 @@ export default defineComponent({
         draggingElement.style.zIndex = "10";
         draggingElement.style.transform = `translate(${offX}px, ${offY}px) scale(1.1)`;
 
-        // highlightedSpot.value = mouseToFileRank(e.clientX, e.clientY);
+        highlightedSpot.value = mouseToFileRank(e.clientX, e.clientY);
       }
     });
 

@@ -77,7 +77,7 @@ func (p *Piece) FindValidMoves(b *Board, file int, rank int, opponentColor int, 
 		checksKing = calculateMovesFromOffsets(b, &validMoves, file, rank, queenOffs, queenOffs, 1, true, opponentColor)
 
 		// castling
-		if p.moves == 0 && castlingRights != nil {
+		if p.moves == 0 && castlingRights != nil && !b.IsKingInCheck(p.color, opponentColor) {
 			checkCastling(b, &validMoves, file, rank, castlingRights)
 		}
 	case Rook:
@@ -176,11 +176,12 @@ func isMoveAlreadyAdded(validMoves *[]Spot, file int, rank int) bool {
 
 func checkCastling(b *Board, validMoves *[]Spot, f, r int, castlingRights *CastlingRights) {
 	// queenside
-	if b.grid[0][r].containsPiece && b.grid[0][r].piece.class == Rook && b.grid[0][r].piece.color == b.grid[f][r].piece.color && b.grid[0][r].piece.moves == 0 {
+	if castlingRights.queenside && b.grid[0][r].containsPiece && b.grid[0][r].piece.class == Rook && b.grid[0][r].piece.color == b.grid[f][r].piece.color && b.grid[0][r].piece.moves == 0 {
 		canQueenside := true
 		for file := 1; file < f; file++ {
 			if b.grid[file][r].containsPiece {
 				canQueenside = false
+				castlingRights.queenside = false
 			}
 		}
 
@@ -190,11 +191,12 @@ func checkCastling(b *Board, validMoves *[]Spot, f, r int, castlingRights *Castl
 	}
 
 	// kingside
-	if b.grid[Size-1][r].containsPiece && b.grid[Size-1][r].piece.class == Rook && b.grid[Size-1][r].piece.color == b.grid[f][r].piece.color && b.grid[Size-1][r].piece.moves == 0 {
+	if castlingRights.kingside && b.grid[Size-1][r].containsPiece && b.grid[Size-1][r].piece.class == Rook && b.grid[Size-1][r].piece.color == b.grid[f][r].piece.color && b.grid[Size-1][r].piece.moves == 0 {
 		canKingside := true
 		for file := f + 1; file < Size-1; file++ {
 			if b.grid[file][r].containsPiece {
 				canKingside = false
+				castlingRights.kingside = false
 			}
 		}
 

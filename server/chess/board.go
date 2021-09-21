@@ -2,6 +2,7 @@ package chess
 
 import (
 	"log"
+	"math"
 )
 
 const Size = 8
@@ -89,7 +90,7 @@ func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 	var rookSpot *Spot = nil
 	var rookDest *Spot = nil
 	var rookPiece *Piece = nil
-	if piece.class == King && piece.moves == 1 && (destination.file == 2 || destination.file == 6) {
+	if piece.class == King && piece.moves == 1 && int(math.Abs(float64(destination.file-start.file))) == 2 {
 		rookDest = &b.grid[3][start.rank]
 		rookSpot = &b.grid[0][start.rank]
 		if destination.file == 6 {
