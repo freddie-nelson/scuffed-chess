@@ -60,13 +60,13 @@ export default class Chess {
       if (rights.toLowerCase() === rights) {
         if (rights === "k") {
           g.blackCastling.kingside = true;
-        } else {
+        } else if (rights === "q") {
           g.blackCastling.queenside = true;
         }
       } else {
         if (rights === "K") {
           g.whiteCastling.kingside = true;
-        } else {
+        } else if (rights === "Q") {
           g.whiteCastling.queenside = true;
         }
       }

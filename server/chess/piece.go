@@ -179,13 +179,14 @@ func checkCastling(b *Board, validMoves *[]Spot, f, r int, castlingRights *Castl
 		for file := 1; file < f; file++ {
 			if b.grid[file][r].containsPiece {
 				canQueenside = false
-				castlingRights.queenside = false
 			}
 		}
 
 		if canQueenside {
 			*validMoves = append(*validMoves, Spot{file: 2, rank: r})
 		}
+	} else {
+		castlingRights.queenside = false
 	}
 
 	// kingside
@@ -194,13 +195,14 @@ func checkCastling(b *Board, validMoves *[]Spot, f, r int, castlingRights *Castl
 		for file := f + 1; file < Size-1; file++ {
 			if b.grid[file][r].containsPiece {
 				canKingside = false
-				castlingRights.kingside = false
 			}
 		}
 
 		if canKingside {
 			*validMoves = append(*validMoves, Spot{file: 6, rank: r})
 		}
+	} else {
+		castlingRights.kingside = false
 	}
 }
 
