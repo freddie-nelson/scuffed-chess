@@ -73,7 +73,7 @@ func (b *Board) MovePiece(start *Spot, destination *Spot, turn int) bool {
 
 	// if pawn move results in en passant, take piece behind destination
 	var passantPiece *Piece
-	if destination.passantTarget > 0 {
+	if destination.passantTarget > 0 && piece.class == Pawn {
 		passantSpot := &b.grid[destination.file][start.rank]
 		passantPiece = passantSpot.piece
 		passantSpot.piece = nil
