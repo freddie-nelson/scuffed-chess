@@ -300,6 +300,7 @@ export default defineComponent({
       promotion: Class = -1
     ) => {
       if (
+        store.state.game.turn == store.state.color &&
         store.state.gameCode &&
         file >= 0 &&
         file < 8 &&
@@ -310,6 +311,9 @@ export default defineComponent({
         dRank >= 0 &&
         dRank < 8
       ) {
+        // fake move on client till response from server
+        store.commit("PLAY_MOVE", { file, rank, dFile, dRank });
+
         socket.emit(
           "game:move",
           store.state.gameCode,

@@ -99,6 +99,20 @@ export default createStore<State>({
       state.you = players.you;
       state.opponent = players.opponent;
     },
+
+    PLAY_MOVE(state, m: { file: number; rank: number; dFile: number; dRank: number }) {
+      const s = state.game.board[m.file][m.rank];
+      const d = state.game.board[m.dFile][m.dRank];
+
+      const piece = s.piece;
+      if (!piece) return;
+
+      s.piece = undefined;
+      s.containsPiece = false;
+
+      d.piece = piece;
+      d.containsPiece = true;
+    },
   },
   actions: {},
   modules: {},

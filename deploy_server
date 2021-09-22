@@ -1,1 +1,2 @@
+heroku git:remote -a scuffedchess
 git subtree push --prefix server heroku master
