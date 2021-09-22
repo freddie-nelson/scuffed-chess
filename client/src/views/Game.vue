@@ -1,6 +1,6 @@
 <template>
   <main class="w-full h-full flex flex-col justify-center items-center">
-    <c-modal v-if="waitingForOpponent" class="flex flex-col">
+    <c-modal v-if="waitingForOpponent" class="flex flex-col text-bg-light">
       <h1 class="font-bold text-3xl">Waiting for opponent...</h1>
       <div class="flex mt-5 mx-auto">
         <c-input-text
@@ -17,13 +17,20 @@
       </div>
     </c-modal>
 
-    <c-modal v-if="joiningGame" class="flex flex-col">
+    <c-modal v-if="joiningGame" class="flex flex-col text-bg-light">
       <h1 class="font-bold text-3xl">Joining game...</h1>
     </c-modal>
 
     <c-modal
       v-if="$store.state.ended"
-      class="flex flex-col items-center justify-center max-w-sm w-full"
+      class="
+        flex flex-col
+        items-center
+        justify-center
+        max-w-sm
+        w-full
+        text-bg-light
+      "
     >
       <h1 class="font-bold text-3xl">
         {{
