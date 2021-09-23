@@ -163,7 +163,7 @@ func main() {
 
 	if PRODUCTION {
 		port = ":" + os.Getenv("PORT")
-		allowedOrigins = []string{"https://scuffedchess.netlify.app"}
+		allowedOrigins = []string{"https://scuffedchess.netlify.app", "https://scuffedchess.online", "https://www.scuffedchess.online"}
 	}
 
 	c := cors.New(cors.Options{
