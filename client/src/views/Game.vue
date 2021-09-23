@@ -63,7 +63,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount, ref, watch } from "vue";
+import {
+  computed,
+  defineComponent,
+  onBeforeMount,
+  onUnmounted,
+  ref,
+  watch,
+} from "vue";
 import { useStore } from "@/store";
 import { useRouter } from "vue-router";
 
@@ -75,6 +82,7 @@ import CGamePlayer from "@/components/app/Game/CGamePlayer.vue";
 
 import { Icon } from "@iconify/vue";
 import copyIcon from "@iconify-icons/feather/copy";
+import useComponentEvent from "@/utils/useComponentEvent";
 
 export default defineComponent({
   name: "Game",
@@ -124,15 +132,6 @@ export default defineComponent({
       return store.state.inGame && !store.state.game && isOpponent;
     });
 
-    watch(
-      computed(() => store.state.ended),
-      (ended) => {
-        if (ended === "disconnect") {
-          resetGame();
-        }
-      }
-    );
-
     const resetGame = () => {
       store.state.socket.emit("game:leave", store.state.gameCode, isOpponent);
 
@@ -140,9 +139,32 @@ export default defineComponent({
       store.commit("SET_IN_GAME", false);
       store.commit("SET_GAME_CODE", "");
       store.commit("SET_ENDED", "");
+      store.commit("SET_PLAYERS", { you: undefined, opponent: undefined });
 
       router.push({ name: "Home" });
     };
+
+    onUnmounted(() => {
+      console.log("yo");
+      resetGame();
+    });
+
+    useComponentEvent(
+      window as any as HTMLElement,
+      "beforeunload" as keyof HTMLElementEventMap,
+      () => {
+        resetGame();
+      }
+    );
+
+    // watch(
+    //   computed(() => store.state.ended),
+    //   (ended) => {
+    //     if (ended === "disconnect") {
+    //       resetGame();
+    //     }
+    //   }
+    // );
 
     const flip = ref(store.state.color === 0);
 

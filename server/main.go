@@ -16,6 +16,7 @@ import (
 const PRODUCTION = true
 
 var games map[string]*c.GameController
+var players map[string]string
 
 func main() {
 	// disable logging in production
@@ -24,6 +25,8 @@ func main() {
 	}
 
 	games = make(map[string]*c.GameController)
+	players = make(map[string]string)
+
 	server := socketio.NewServer(nil)
 
 	server.OnError("/", func(s socketio.Conn, e error) {
@@ -31,12 +34,27 @@ func main() {
 	})
 
 	server.OnConnect("/", func(s socketio.Conn) error {
-		log.Println("connected: ", s.ID())
+		players[s.ID()] = ""
 
+		log.Println("connected: ", s.ID())
 		return nil
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
+
+		if players[s.ID()] != "" {
+			g, exists := games[players[s.ID()]]
+			if exists {
+				isOpponent := false
+				if g.Opponent != nil && g.Opponent.CompareID((s.ID())) {
+					isOpponent = true
+				}
+				leaveGame(s, players[s.ID()], isOpponent)
+			}
+		}
+
+		delete(players, s.ID())
+
 		log.Println("closed", reason)
 	})
 
@@ -56,6 +74,8 @@ func main() {
 		g.You = p
 
 		games[code] = g
+		players[s.ID()] = code
+
 		log.Printf("create game (%s): %s \n", username, code)
 
 		return code
@@ -72,6 +92,9 @@ func main() {
 
 		g.StartGame()
 		g.BroadcastData()
+
+		players[s.ID()] = code
+
 		log.Printf("join game (%s): %s \n", username, code)
 
 		return code
@@ -126,27 +149,7 @@ func main() {
 	})
 
 	server.OnEvent("/", "game:leave", func(s socketio.Conn, code string, isOpponent bool) bool {
-		if _, exists := games[code]; !exists {
-			return false
-		}
-
-		g := games[code]
-
-		if isOpponent && g.Opponent.CompareID(s.ID()) {
-			g.Opponent = nil
-			g.You.GetSocket().Emit("game:end-state", "disconnect")
-			delete(games, code)
-
-			return true
-		} else if g.You.CompareID((s.ID())) {
-			g.You = nil
-			g.Opponent.GetSocket().Emit("game:end-state", "disconnect")
-			delete(games, code)
-
-			return true
-		} else {
-			return false
-		}
+		return leaveGame(s, code, isOpponent)
 	})
 
 	go server.Serve()
@@ -174,4 +177,36 @@ func main() {
 
 	fmt.Println("Serving at localhost" + port)
 	fmt.Println(http.ListenAndServe(port, handler))
+}
+
+func leaveGame(s socketio.Conn, code string, isOpponent bool) bool {
+	if _, exists := games[code]; !exists {
+		return false
+	}
+
+	g := games[code]
+	delete(games, code)
+
+	players[s.ID()] = ""
+
+	left := false
+	if isOpponent && g.Opponent != nil && g.Opponent.CompareID(s.ID()) {
+		g.Opponent = nil
+
+		os := g.You.GetSocket()
+		os.Emit("game:end-state", "disconnect")
+		players[os.ID()] = ""
+
+		left = true
+	} else if g.You != nil && g.You.CompareID((s.ID())) {
+		g.You = nil
+
+		os := g.You.GetSocket()
+		os.Emit("game:end-state", "disconnect")
+		players[os.ID()] = ""
+
+		left = true
+	}
+
+	return left
 }
