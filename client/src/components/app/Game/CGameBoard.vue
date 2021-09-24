@@ -20,10 +20,19 @@
         }"
         :style="{ cursor: board && board[c][r].containsPiece ? 'grab' : null }"
         @mousedown="dragStart(c, r)"
+        @touchstart="dragStart(c, r)"
       >
         <c-game-piece
           v-if="board && board[c] && board[c][r] && board[c][r].containsPiece"
-          class="piece absolute flex text-primary-500 transform scale-110"
+          class="
+            piece
+            absolute
+            flex
+            text-primary-500
+            transform
+            md:scale-110
+            scale-90
+          "
           :piece="board[c][r].piece"
         />
       </div>
@@ -263,9 +272,17 @@ export default defineComponent({
       dragEnd(file, rank);
     });
 
-    useComponentEvent(document.body, "mousemove", (event) => {
-      const e = event as MouseEvent;
+    useComponentEvent(document.body, "touchend", (event) => {
+      const e = event as TouchEvent;
 
+      const { file, rank } = mouseToFileRank(
+        e.touches[0].clientX,
+        e.touches[0].clientY
+      );
+      dragEnd(file, rank);
+    });
+
+    const dragMove = (mouseX: number, mouseY: number) => {
       if (isDragging) {
         const boardRect = boardElement.value.getBoundingClientRect();
         const spotRect = draggingElementSpot.getBoundingClientRect();
@@ -273,8 +290,8 @@ export default defineComponent({
         const centerX = spotRect.x + spotRect.width / 2;
         const centerY = spotRect.y + spotRect.height / 2;
 
-        let offX = e.clientX - spotRect.x - spotRect.width / 2;
-        let offY = e.clientY - spotRect.y - spotRect.height / 2;
+        let offX = mouseX - spotRect.x - spotRect.width / 2;
+        let offY = mouseY - spotRect.y - spotRect.height / 2;
 
         // constrain piece to inside board
         if (offX < boardRect.x - centerX) offX = boardRect.x - centerX;
@@ -288,8 +305,20 @@ export default defineComponent({
         draggingElement.style.zIndex = "10";
         draggingElement.style.transform = `translate(${offX}px, ${offY}px) scale(1.1)`;
 
-        highlightedSpot.value = mouseToFileRank(e.clientX, e.clientY);
+        highlightedSpot.value = mouseToFileRank(mouseX, mouseY);
       }
+    };
+
+    useComponentEvent(document.body, "mousemove", (event) => {
+      const e = event as MouseEvent;
+
+      dragMove(e.clientX, e.clientY);
+    });
+
+    useComponentEvent(document.body, "touchmove", (event) => {
+      const e = event as TouchEvent;
+
+      dragMove(e.touches[0].clientX, e.touches[0].clientY);
     });
 
     const makeMove = (
@@ -366,7 +395,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-$board-size: clamp(380px, 50vw, 70vh);
+$board-size: clamp(300px, 50vw, 70vh);
 
 .board {
   width: $board-size;

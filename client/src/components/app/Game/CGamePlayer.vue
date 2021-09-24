@@ -21,7 +21,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-$board-size: clamp(380px, 50vw, 70vh);
+$board-size: clamp(300px, 50vw, 70vh);
 
 .player-card {
   width: $board-size;
