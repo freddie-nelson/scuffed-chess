@@ -17,6 +17,42 @@
       </div>
     </c-modal>
 
+    <c-modal
+      v-if="showJoinModal"
+      class="
+        max-w-lg
+        w-full
+        flex flex-col
+        items-center
+        justify-center
+        text-bg-light
+      "
+    >
+      <h1 class="font-bold text-3xl mb-4">Join Game</h1>
+
+      <c-input-text
+        classes="w-full"
+        name="username"
+        placeholder="Username"
+        label="Username"
+        :error="usernameError"
+        maxlength="18"
+        v-model="username"
+        dark
+      />
+      <c-button
+        class="w-full mt-3 h-14"
+        @click="
+          () => {
+            res = joinGame(code);
+            !res ? (showJoinModal = false) : null;
+          }
+        "
+      >
+        Join Game
+      </c-button>
+    </c-modal>
+
     <c-modal v-if="joiningGame" class="flex flex-col text-bg-light">
       <h1 class="font-bold text-3xl">Joining game...</h1>
     </c-modal>
@@ -67,12 +103,15 @@ import {
   computed,
   defineComponent,
   onBeforeMount,
-  onUnmounted,
+  onBeforeUnmount,
   ref,
   watch,
 } from "vue";
 import { useStore } from "@/store";
 import { useRouter } from "vue-router";
+
+import useComponentEvent from "@/utils/useComponentEvent";
+import useGameHandler from "@/utils/useGameHandler";
 
 import CModal from "@/components/shared/Modal/CModal.vue";
 import CInputText from "@/components/shared/Input/CInputText.vue";
@@ -82,7 +121,6 @@ import CGamePlayer from "@/components/app/Game/CGamePlayer.vue";
 
 import { Icon } from "@iconify/vue";
 import copyIcon from "@iconify-icons/feather/copy";
-import useComponentEvent from "@/utils/useComponentEvent";
 
 export default defineComponent({
   name: "Game",
@@ -98,14 +136,32 @@ export default defineComponent({
     const store = useStore();
     const router = useRouter();
 
-    onBeforeMount(() => {
-      if (!store.state.inGame) {
-        router.push({ name: "Home" });
+    const code = router.currentRoute.value.query.code?.toString() as string;
+    let isOpponent = !!router.currentRoute.value.query.opponent;
+
+    const showJoinModal = ref(false);
+    const username = ref("");
+    const usernameError = ref("");
+
+    const { joinGame } = useGameHandler(username, usernameError);
+
+    watch(usernameError, (err) => {
+      if (err && err.startsWith("Failed")) {
+        store.commit("ADD_TOAST", { text: err, duration: 2000 });
+        resetGame();
       }
     });
 
-    const code = router.currentRoute.value.query.code?.toString() as string;
-    const isOpponent = router.currentRoute.value.query.opponent;
+    onBeforeMount(() => {
+      if (!store.state.inGame) {
+        if (code.length === 6) {
+          isOpponent = true;
+          showJoinModal.value = true;
+        } else {
+          router.push({ name: "Home" });
+        }
+      }
+    });
 
     const copyCode = () => {
       navigator.clipboard
@@ -144,8 +200,7 @@ export default defineComponent({
       router.push({ name: "Home" });
     };
 
-    onUnmounted(() => {
-      console.log("yo");
+    onBeforeUnmount(() => {
       resetGame();
     });
 
@@ -157,18 +212,14 @@ export default defineComponent({
       }
     );
 
-    // watch(
-    //   computed(() => store.state.ended),
-    //   (ended) => {
-    //     if (ended === "disconnect") {
-    //       resetGame();
-    //     }
-    //   }
-    // );
-
-    const flip = ref(store.state.color === 0);
+    const flip = computed(() => store.state.color === 0);
 
     return {
+      showJoinModal,
+      username,
+      usernameError,
+      joinGame,
+
       code,
       copyCode,
 

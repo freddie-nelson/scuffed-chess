@@ -51,7 +51,7 @@
         v-model="username"
         dark
       />
-      <c-button class="w-full mt-3 h-14" @click="joinGame">
+      <c-button class="w-full mt-3 h-14" @click="joinGame(joinCode)">
         Join Game
       </c-button>
     </c-modal>
@@ -92,16 +92,15 @@
 </template>
 
 <script lang="ts">
-import { Color } from "@/utils/chess";
 import { defineComponent, ref } from "vue";
-import { useRouter } from "vue-router";
+
+import useGameHandler from "@/utils/useGameHandler";
 
 import CButton from "../components/shared/Button/CButton.vue";
 import CButtonOutline from "../components/shared/Button/CButtonOutline.vue";
 import CGradientHeading from "../components/shared/Heading/CGradientHeading.vue";
 import CInputText from "../components/shared/Input/CInputText.vue";
 import CModal from "../components/shared/Modal/CModal.vue";
-import { useStore } from "../store";
 
 export default defineComponent({
   name: "Home",
@@ -113,9 +112,6 @@ export default defineComponent({
     CModal,
   },
   setup() {
-    const store = useStore();
-    const router = useRouter();
-
     const username = ref("");
     const usernameError = ref("");
 
@@ -135,52 +131,9 @@ export default defineComponent({
       }
     };
 
-    const joinGame = () => {
-      if (username.value.length > 18)
-        return (usernameError.value = "Username exceeds 18 characters.");
-      else if (!username.value)
-        return (usernameError.value = "Username is empty.");
-
-      store.state.socket.emit(
-        "game:join",
-        username.value,
-        joinCode.value,
-        (code: string) => {
-          if (code) {
-            router.push({
-              name: "Game",
-              query: { code: code, opponent: "true" },
-            });
-            store.commit("SET_IN_GAME", true);
-            store.commit("SET_GAME_CODE", code);
-            store.commit("SET_COLOR", Color.Black);
-          } else {
-            usernameError.value = "Failed to join game.";
-          }
-        }
-      );
-    };
-
-    // create
     const showCreateModal = ref(false);
 
-    const createGame = () => {
-      if (username.value.length > 18)
-        return (usernameError.value = "Username exceeds 18 characters.");
-      else if (!username.value)
-        return (usernameError.value = "Username is empty.");
-
-      store.state.socket.emit("game:create", username.value, (code: string) => {
-        if (code) {
-          router.push({ name: "Game", query: { code: code } });
-          store.commit("SET_GAME_CODE", code);
-          store.commit("SET_IN_GAME", true);
-          store.commit("SET_COLOR", Color.White);
-        } else {
-          usernameError.value = "Failed to create game.";
-        }
-      });
-    };
+    const { joinGame, createGame } = useGameHandler(username, usernameError);
 
     return {
       username,
