@@ -177,7 +177,7 @@ func checkCastling(b *Board, validMoves *[]Spot, f, r int, castlingRights *Castl
 	if castlingRights.queenside && b.grid[0][r].containsPiece && b.grid[0][r].piece.class == Rook && b.grid[0][r].piece.color == b.grid[f][r].piece.color && b.grid[0][r].piece.moves == 0 {
 		canQueenside := true
 		for file := 1; file < f; file++ {
-			if b.grid[file][r].containsPiece {
+			if b.grid[file][r].containsPiece || b.grid[f][r].piece.PruneMove(b, f, r, file, r) {
 				canQueenside = false
 			}
 		}
@@ -193,7 +193,7 @@ func checkCastling(b *Board, validMoves *[]Spot, f, r int, castlingRights *Castl
 	if castlingRights.kingside && b.grid[Size-1][r].containsPiece && b.grid[Size-1][r].piece.class == Rook && b.grid[Size-1][r].piece.color == b.grid[f][r].piece.color && b.grid[Size-1][r].piece.moves == 0 {
 		canKingside := true
 		for file := f + 1; file < Size-1; file++ {
-			if b.grid[file][r].containsPiece {
+			if b.grid[file][r].containsPiece || b.grid[f][r].piece.PruneMove(b, f, r, file, r) {
 				canKingside = false
 			}
 		}
