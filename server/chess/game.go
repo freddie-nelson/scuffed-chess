@@ -45,7 +45,7 @@ func NewGame(code string) *GameController {
 	// create board
 	g.board = NewBoard()
 
-	startingFEN := "r3k2r/8/8/8/8/8/8/R2QKR2 w KQkq - 0 1"
+	startingFEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 	g.fromFENString(startingFEN)
 
 	return &g
