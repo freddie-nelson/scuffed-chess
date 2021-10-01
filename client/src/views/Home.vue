@@ -10,6 +10,7 @@
         :error="joinCodeError"
         maxlength="6"
         v-model="joinCode"
+        @keyup.enter="tryShowJoinModal"
       />
       <c-button class="w-full mt-3 h-14" @click="tryShowJoinModal">
         Join Game
@@ -50,6 +51,7 @@
         maxlength="18"
         v-model="username"
         dark
+        @keyup.enter="joinGame(joinCode)"
       />
       <c-button class="w-full mt-3 h-14" @click="joinGame(joinCode)">
         Join Game
@@ -83,6 +85,7 @@
         maxlength="18"
         v-model="username"
         dark
+        @keyup.enter="createGame"
       />
       <c-button class="w-full mt-3 h-14" @click="createGame">
         Create Game

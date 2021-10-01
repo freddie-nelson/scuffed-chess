@@ -39,6 +39,12 @@
         maxlength="18"
         v-model="username"
         dark
+        @keyup.enter="
+          () => {
+            res = joinGame(code);
+            !res ? (showJoinModal = false) : null;
+          }
+        "
       />
       <c-button
         class="w-full mt-3 h-14"
